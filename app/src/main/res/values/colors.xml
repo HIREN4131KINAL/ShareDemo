@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#0277bd</color>
+    <color name="colorPrimaryDark">#01579b</color>
+    <color name="colorAccent">#11e206</color>
+    <color name="textColorPrimary">#FFFFFF</color>
+    <color name="windowBackground">#FFFFFF</color>
+    <color name="navigationBarColor">#000000</color>
+    <color name="ripplecolor">#01579b</color>
+
+    <array name="dot_colors">
+        <item>#f44336</item>
+        <item>#03A9F4</item>
+        <item>#e91e63</item>
+        <item>#9c27b0</item>
+        <item>#4caf50</item>
+
+    </array>
 </resources>

@@ -2,13 +2,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.guest999.firebasenotification">
 
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+
+
+        <activity android:name="com.example.guest999.firebasenotification.activities.Login">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -16,17 +29,26 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".MyFirebaseMessagingService">
+
+        <service
+            android:name="com.example.guest999.firebasenotification.MyFirebaseMessagingService"
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
-        <service android:name=".MyFirebaseInstanceIDService">
+        <service android:name="com.example.guest999.firebasenotification.MyFirebaseInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
+
+        <!-- <activity android:name=".Login" /> -->
+        <activity android:name="com.example.guest999.firebasenotification.activities.RegisterActivity" />
+        <activity android:name="com.example.guest999.firebasenotification.activities.Data_Sharing" />
+        <activity android:name="com.example.guest999.firebasenotification.activities.UserList" />
+        <activity android:name="com.example.guest999.firebasenotification.activities.Search" />
     </application>
 
 </manifest>

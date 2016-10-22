@@ -1,3 +1,26 @@
 <resources>
-    <string name="app_name">FirebaseNotification</string>
+    <string name="app_name">File Sharing</string>
+
+    <string name="attach">Attach</string>
+    <string name="gallery">Gallery</string>
+    <string name="camera">Camera</string>
+    <string name="document">Document</string>
+    <string name="filename">filename</string>
+    <string name="_11_15_pm">11:15 PM</string>
+    <string name="phone">Phone</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="create_account">Create Account</string>
+    <string name="username">Full Namme</string>
+    <string name="register">Register</string>
+    <string name="loading">Sending</string>
+    <string name="already_have_an_account_login_here">Already have an account? Login here</string>
+    <string name="contacts">Contacts</string>
+    <string name="media">Media</string>
+    <string name="search">Search</string>
+    <string name="search_">Search…</string>
+    <string name="title">Name</string>
+    <string name="send_receive_status">Status</string>
+    <string name="received">Received</string>
+    <string name="sent">Sent</string>
 </resources>
