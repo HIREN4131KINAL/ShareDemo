@@ -125,9 +125,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                 e.printStackTrace();
             }
         }
-        /* else {
-            LoadUserData();
-        }*/
 
 
         recyclerView.setOnTouchListener(new View.OnTouchListener() {
