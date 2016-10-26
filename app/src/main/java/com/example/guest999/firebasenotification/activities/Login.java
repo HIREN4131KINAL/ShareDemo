@@ -38,6 +38,8 @@ import java.util.Map;
 
 public class Login extends AppCompatActivity implements View.OnClickListener {
 
+    //testing
+
     public static final String PREFS_NAME = "Login";
     public static SharedPreferences settings;
     public static boolean hasLoggedIn;
@@ -160,6 +162,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                                 //Asking user to confirm otp
                                 //confirmOtp();
                                 SharedPreferenceManager.setDefaults("phone", login_phone, getApplicationContext());
+                                SharedPreferenceManager.setDefaults("type", login_phone, getApplicationContext());
                                 Log.e("onResponse Login User: ", login_phone);
                                 Intent intent = new Intent(Login.this, UserList.class);
                                 startActivity(intent);
