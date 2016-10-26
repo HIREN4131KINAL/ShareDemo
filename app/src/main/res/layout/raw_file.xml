@@ -4,81 +4,82 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginLeft="5dp"
-    android:layout_marginRight="5dp">
+    android:layout_marginRight="5dp"
+    android:orientation="vertical">
 
-
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/outgoing_layout_bubble"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:weightSum="2">
+        android:layout_marginRight="8dp"
+        android:elevation="8dp">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="top"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/file_image"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="start|top"
-                android:layout_margin="5dp"
-                android:background="@drawable/pdf"
-                android:padding="5dp" />
-
-            <TextView
-                android:id="@+id/file_name"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start|top"
-                android:layout_margin="10dp"
-                android:text="@string/filename"
-                android:textAlignment="center"
-                android:textColor="@color/colorPrimary"
-                android:textSize="20sp" />
+                android:gravity="top"
+                android:orientation="horizontal"
+                android:weightSum="2">
 
+                <ImageView
+                    android:id="@+id/file_image"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="start|top"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_weight="0"
+                    android:background="@drawable/pdf" />
+
+                <TextView
+                    android:id="@+id/file_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start|top"
+                    android:layout_margin="10dp"
+                    android:layout_weight="2"
+                    android:text="@string/filename"
+                    android:textAlignment="center"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="20sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0"
+                android:orientation="horizontal"
+                android:paddingRight="5dp">
+
+
+                <TextView
+                    android:id="@+id/textview_time"
+                    style="@style/chat_timings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:text="@string/_11_15_pm"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/user_reply_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:paddingBottom="3dp"
+                    android:paddingRight="7dp"
+                    android:src="@drawable/message_got_read_receipt_from_target" />
+
+            </LinearLayout>
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:baselineAligned="true"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/send_receive"
-                style="@style/chat_timings"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.8"
-                android:gravity="center"
-                android:text="@string/send_receive_status"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/textview_time"
-                style="@style/chat_timings"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.6"
-                android:gravity="center"
-                android:padding="5dp"
-                android:text="@string/_11_15_pm"
-                android:textSize="12sp" />
-
-            <ImageView
-                android:id="@+id/user_reply_status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:layout_weight="0.2"
-                android:padding="5dp"
-                android:src="@drawable/message_got_read_receipt_from_target" />
-
-        </LinearLayout>
-    </LinearLayout>
-
+    </RelativeLayout>
 </LinearLayout>

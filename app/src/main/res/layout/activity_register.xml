@@ -71,7 +71,7 @@
             android:textColor="@android:color/white" />
 
         <TextView
-            android:id="@+id/linkSignup"
+            android:id="@+id/linkLogin"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="end"

@@ -23,4 +23,15 @@
     <string name="send_receive_status">Status</string>
     <string name="received">Received</string>
     <string name="sent">Sent</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="action_logout">Logout</string>
+    <string name="change_password">Change Password</string>
+
+    <string name="err_msg_password">Please Enter valid Password</string>
+    <string name="err_msg_pass_digit">Must Be Six Digit</string>
+    <string name="date">DATE</string>
+    <string name="contact_name">Contact name</string>
+    <string name="contact_no">Contact no</string>
+
 </resources>

@@ -34,16 +34,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * Created by Joshi Tushar on 10/7/2016.
  */
 
 public class RegisterActivity extends AppCompatActivity {
     /**
      * Notification
      */
-
-    private TextView txtRegId, txtMessage;
-
+    private TextView txtRegId, txtMessage, linkLogin;
     /**
      * OTP
      */
@@ -85,6 +83,8 @@ public class RegisterActivity extends AppCompatActivity {
         //til_confirmotp=(TextInputLayout)findViewById(R.id.til_confirm_otp);
 
         buttonRegister = (AppCompatButton) findViewById(R.id.buttonRegister);
+
+        linkLogin = (TextView) findViewById(R.id.linkLogin);
     }
 
     private void LoadUILisners() {
@@ -100,8 +100,15 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
-    }
+        linkLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(RegisterActivity.this, Login.class);
+                startActivity(intent);
+            }
+        });
 
+    }
     private void checkValidation() {
         if (!validateUserName()) {
             return;
@@ -110,7 +117,7 @@ public class RegisterActivity extends AppCompatActivity {
         } else if (!validatePhoneNo()) {
             return;
         } else {
-           /* Intent intent= new Intent(RegisterActivity.this,Login.class);
+           /* Intent intent= new Intent(MainActivity.this,Login.class);
             startActivity(intent);*/
             register();
         }
@@ -289,7 +296,7 @@ public class RegisterActivity extends AppCompatActivity {
                         }) {
                     @Override
                     protected Map<String, String> getParams() throws AuthFailureError {
-                        Map<String, String> params = new HashMap<String, String>();
+                        Map<String, String> params = new HashMap<>();
                         //Adding the parameters otp and username
                         params.put(Config.KEY_OTP, otp);
                         params.put(Config.KEY_USERNAME, username);

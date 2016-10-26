@@ -54,7 +54,7 @@
                     android:id="@+id/gallery"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
-                    android:background="@drawable/image" />
+                    android:background="@drawable/gallery" />
 
                 <TextView
                     android:id="@+id/textView"

@@ -3,6 +3,7 @@ package com.example.guest999.firebasenotification.activities;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -32,19 +33,29 @@ import com.example.guest999.firebasenotification.NotificationUtils;
 import com.example.guest999.firebasenotification.R;
 import com.example.guest999.firebasenotification.utilis.SharedPreferenceManager;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.kosalgeek.android.caching.MainActivity;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Created by Joshi Tushar and Modified Harshad
+ */
+
 public class Login extends AppCompatActivity implements View.OnClickListener {
 
-    //testing
-
     public static final String PREFS_NAME = "Login";
-    public static SharedPreferences settings;
     public static boolean hasLoggedIn;
+    public static SharedPreferences settings;
     String regId;
     TextView create_account;
+    String Login_User;
+    String TAG = getClass().getName();
+    String u_type, u_status;
+    String type;
     private EditText et_loginphone, et_login_password;
     private TextInputLayout til_login_phone, til_login_pass;
     private AppCompatButton login_button;
@@ -58,15 +69,35 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
 
         settings = getSharedPreferences(Login.PREFS_NAME, 0);
         hasLoggedIn = settings.getBoolean("hasLoggedIn", false);
+        type = SharedPreferenceManager.getDefaults("type", getApplicationContext());
+        Login_User = SharedPreferenceManager.getDefaults("phone", getApplicationContext());
 
-        if (hasLoggedIn) {
-            Intent intent = new Intent(getApplicationContext(), UserList.class);
+        Log.e(TAG, "onCreate login phone: " + Login_User);
+        Log.e(TAG, "onCreate: " + type);
+
+        /*if (hasLoggedIn && type.contains("user")) {
+            Toast.makeText(this, "User Login Sucessfully", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(Login.this, DataSharing_forUser.class);
+            intent.putExtra("Click_Phone", Login_User);
             startActivity(intent);
+        }*/
+        if (hasLoggedIn) {
+
+            Log.e("onCreate: ", hasLoggedIn + "");
+
+            if (type.contains("admin")) {
+                Intent intent = new Intent(Login.this, UserList.class);
+                startActivity(intent);
+            } else {
+                Intent intent = new Intent(Login.this, DataSharing_forUser.class);
+                intent.putExtra("Click_Phone", Login_User);
+                startActivity(intent);
+            }
+            checkLogin();
         }
 
         setContentView(R.layout.activity_login);
         requestQueue = Volley.newRequestQueue(this);
-
 
         LoaduiElements();
         LoadUILisners();
@@ -142,7 +173,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
 
     private void submitForm() {
         //Displaying a progress dialog
-        final ProgressDialog loading = ProgressDialog.show(this, "Registering", "Please wait...", false, false);
+        final ProgressDialog loading = ProgressDialog.show(this, "Processing", "Please wait...", false, false);
         //Getting user data
         login_phone = et_loginphone.getText().toString().trim();
         login_password = et_login_password.getText().toString().trim();
@@ -150,25 +181,69 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         //Again creating the string request
         StringRequest stringRequest = new StringRequest(Request.Method.POST, Config.LOGIN_URL,
                 new Response.Listener<String>() {
-
                     @Override
                     public void onResponse(String response) {
                         loading.dismiss();
                         try {
-                            //Creating the json object from the response
-                            Log.e("OnResponse", response);
-                            //If it is success
-                            if (response.equalsIgnoreCase(Config.TAG_Active)) {
+                            //Creating the json object from Log.e("OnResponse", response);
+                            Log.e("full OnResponse", response);
+                            JSONObject jsonObject = new JSONObject(response);
+                            JSONArray jsonArray = jsonObject.getJSONArray("logindata");
+
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject object = jsonArray.getJSONObject(i);
+
+                                u_type = object.getString("type");
+                                u_status = object.getString("status");
+                                if (u_type.contains("admin") && u_status.contains("active")) {
+
+                                    SharedPreferenceManager.setDefaults("phone", login_phone, getApplicationContext());
+                                    SharedPreferenceManager.setDefaults("type", u_type, getApplicationContext());
+                                    SharedPreferenceManager.setDefaults("f_id", firebase_id, getApplicationContext());
+
+                                    Intent usrlist = new Intent(getApplicationContext(), UserList.class);
+                                    finish();
+                                    startActivity(usrlist);
+                                    Toast.makeText(getApplicationContext(), "Login Successfully", Toast.LENGTH_SHORT).show();
+
+                                    SharedPreferenceManager.setDefaults_boolean("notification", true, getApplicationContext());
+
+                                    SharedPreferences settings = getSharedPreferences(Login.PREFS_NAME, 0); // 0 - for private mode
+                                    SharedPreferences.Editor editor = settings.edit();
+                                    editor.putString("phone", login_phone);
+                                    editor.putString("f_id", firebase_id);
+                                    editor.putBoolean("hasLoggedIn", true);
+                                    editor.apply();
+                                } else {
+
+                                    Intent dataToAdmin = new Intent(Login.this, DataSharing_forUser.class);
+                                    dataToAdmin.putExtra("Click_Phone", login_phone);
+                                    startActivity(dataToAdmin);
+                                    SharedPreferenceManager.setDefaults("phone", login_phone, getApplicationContext());
+                                    SharedPreferenceManager.setDefaults("type", u_type, getApplicationContext());
+                                    SharedPreferenceManager.setDefaults("f_id", firebase_id, getApplicationContext());
+
+                                    SharedPreferenceManager.setDefaults_boolean("notification", true, Login.this);
+                                    SharedPreferences settings = getSharedPreferences(Login.PREFS_NAME, 0); // 0 - for private mode
+                                    SharedPreferences.Editor editor = settings.edit();
+                                    editor.putString("phone", login_phone);
+                                    editor.putString("f_id", firebase_id);
+                                    editor.putBoolean("hasLoggedIn", true);
+                                    editor.apply();
+                                }
+                            }
+                            /*if (response.equalsIgnoreCase(Config.TAG_Active)) {
                                 //Asking user to confirm otp
                                 //confirmOtp();
                                 SharedPreferenceManager.setDefaults("phone", login_phone, getApplicationContext());
-                                SharedPreferenceManager.setDefaults("type", login_phone, getApplicationContext());
                                 Log.e("onResponse Login User: ", login_phone);
                                 Intent intent = new Intent(Login.this, UserList.class);
                                 startActivity(intent);
-
+                                //for notifiactiion
+                                SharedPreferenceManager.setDefaults_boolean("notification", true, getApplicationContext());
+                                //show the successfully toast when login
+                                Toast.makeText(Login.this, "Login Successfully", Toast.LENGTH_SHORT).show();
                                 //Log.e("onResponse Login User: ", login_phone);
-
                                 SharedPreferences settings = getSharedPreferences(Login.PREFS_NAME, 0); // 0 - for private mode
                                 SharedPreferences.Editor editor = settings.edit();
                                 editor.putBoolean("hasLoggedIn", true);
@@ -176,7 +251,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                             } else {
                                 //If not successful user may already have registered
                                 Toast.makeText(Login.this, "Username or Phone number invalid", Toast.LENGTH_LONG).show();
-                            }
+                            }*/
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -186,7 +261,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         loading.dismiss();
-                        Toast.makeText(Login.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(Login.this, "Please check Internet Connection", Toast.LENGTH_LONG).show();
                         Log.e("onErrorResponse: ", error + "");
                     }
                 }) {
@@ -201,6 +276,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
             }
         };
 
+
         //Adding request the the queue
         requestQueue.add(stringRequest);
     }
@@ -208,7 +284,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         if (v == create_account) {
-            Intent intent = new Intent(Login.this, RegisterActivity.class);
+            Intent intent = new Intent(Login.this, MainActivity.class);
             startActivity(intent);
         }
 
@@ -311,5 +387,86 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
             }
 
         }
+    }
+
+    public void checkLogin() {
+
+        settings = getSharedPreferences(Login.PREFS_NAME, MODE_PRIVATE);
+        final String phone = settings.getString("phone", null);
+        final String f_id = settings.getString("f_id", null);
+        //Again creating the string request
+        RequestQueue requestQueue1 = Volley.newRequestQueue(this);
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, Config.CHECKING_URL,
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            //Creating the json object from the response
+                            Log.e("OnResponse", response);
+                            //If it is success
+                            if (response.equalsIgnoreCase(Config.TAG_CHECK)) {
+
+                                /*Toast.makeText(Login.this, "Successful Checking is Done", Toast.LENGTH_LONG).show();*/
+                                Log.e("onResponse: ", "success");
+
+                                if (type.contains("admin")) {
+                                    Intent intent = new Intent(Login.this, UserList.class);
+                                    startActivity(intent);
+                                } else {
+                                    Intent intent = new Intent(Login.this, DataSharing_forUser.class);
+                                    intent.putExtra("Click_Phone", Login_User);
+                                    startActivity(intent);
+                                }
+
+                            } else {
+
+                                //If not successful user may already have registered
+                                /*Toast.makeText(Login.this, "Successful Checking is Not Done", Toast.LENGTH_LONG).show();*/
+                                Log.e("onResponse: ", "Not success");
+
+                                android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(Login.this);
+                                builder.setTitle("Warning For Login");
+                                builder.setMessage("Are you sure want to logout from another device?");
+                                builder.setIcon(R.drawable.warning);
+                                builder.setPositiveButton("OK",
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                // positive button logic
+                                                SharedPreferenceManager.setDefaults_boolean("notification", false, Login.this);
+                                                settings.edit().clear().apply();
+                                                SharedPreferenceManager.ClearAllPreferences(Login.this);
+                                            }
+                                        });
+                                android.support.v7.app.AlertDialog dialog = builder.create();
+                                // display dialog
+                                dialog.show();
+
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(Login.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                        Log.e("onErrorResponse: ", error + "");
+                    }
+                }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                //Adding the parameters to the request
+                params.put(Config.KEY_PHONE, phone);
+                params.put(Config.KEY_FIREBASE_ID, f_id);
+                return params;
+            }
+        };
+
+        //Adding request the the queue
+        requestQueue1.add(stringRequest);
     }
 }

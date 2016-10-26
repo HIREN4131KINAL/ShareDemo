@@ -7,7 +7,7 @@
     android:layout_marginRight="5dp"
     android:orientation="vertical">
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/outgoing_layout_bubble"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -23,9 +23,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:gravity="start"
+                android:gravity="end"
                 android:orientation="horizontal"
-                android:padding="3dp"
                 android:weightSum="2">
 
                 <TextView
@@ -33,25 +32,28 @@
                     style="@style/chat_timings"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="start"
-                    android:layout_weight="1.5"
-                    android:text="DATE"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="2"
+                    android:gravity="left"
+                    android:text="@string/date"
                     android:textSize="14sp" />
 
-            <!--    <ImageButton
+                <!--<ImageButton
                     android:id="@+id/ib_remove"
-                    android:layout_width="10dp"
-                    android:layout_height="18dp"
-                    android:layout_gravity="end"
-                    android:layout_weight="0.4"
-                    android:padding="5dp"
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_margin="3dp"
+                    android:layout_weight="0"
+
                     android:background="@android:color/transparent"
-                    android:src="@android:drawable/ic_menu_close_clear_cancel" />-->
+                    android:src="@android:drawable/ic_menu_close_clear_cancel" />
+-->
             </LinearLayout>
 
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:orientation="vertical"
@@ -62,50 +64,35 @@
                     android:layout_width="180dp"
                     android:layout_height="220dp"
                     android:layout_gravity="center"
-                    android:layout_marginRight="4dp"
                     android:background="@drawable/placeholder" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="0"
                     android:orientation="horizontal"
-                    android:padding="2dp"
-                    android:weightSum="5">
+                    android:paddingRight="5dp">
 
-                    <TextView
-                        android:id="@+id/send_receive"
-                        style="@style/chat_timings"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:gravity="center"
-                        android:maxEms="7"
-                        android:maxLines="1"
-                        android:padding="2dp"
-                        android:text="@string/send_receive_status"
-                        android:textSize="12sp" />
 
                     <TextView
                         android:id="@+id/textview_time"
                         style="@style/chat_timings"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:gravity="center"
-                        android:maxEms="7"
-                        android:maxLines="1"
-                        android:padding="3dp"
+                        android:layout_gravity="center"
+                        android:layout_marginRight="10dp"
+                        android:layout_weight="1"
+                        android:gravity="center|end"
                         android:text="@string/_11_15_pm"
-                        android:textSize="12sp" />
+                        android:textSize="14sp" />
 
                     <ImageView
                         android:id="@+id/user_reply_status"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:padding="3dp"
+                        android:paddingBottom="3dp"
+                        android:paddingRight="10dp"
                         android:src="@drawable/message_got_read_receipt_from_target" />
 
                 </LinearLayout>
@@ -113,6 +100,6 @@
 
         </LinearLayout>
 
-    </LinearLayout>
+    </RelativeLayout>
 
 </LinearLayout>

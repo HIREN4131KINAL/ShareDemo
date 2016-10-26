@@ -1,8 +1,11 @@
 package com.example.guest999.firebasenotification.activities;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -40,14 +43,19 @@ import java.util.Map;
 
 import static com.example.guest999.firebasenotification.Config.KEY_PHONE;
 
+/**
+ * Created by Harshad and Modified Joshi Tushar
+ */
+
+
 public class UserList extends AppCompatActivity {
     public static ArrayList<HashMap<String, String>> hello;
     RecyclerView lv;
-    String Login_User, User_Click_Phone;
+    String Login_User, User_Click_Phone, admin_type;
     String TAG = getClass().getName();
-    MyAdapter myAdapter;
     private RequestQueue requestQueue;
-    String date, time, ampma;
+    public Uri imageUri, FilePath, ContactPath;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,10 +72,63 @@ public class UserList extends AppCompatActivity {
         requestQueue = Volley.newRequestQueue(this);
 
         Login_User = SharedPreferenceManager.getDefaults("phone", getApplicationContext());
+        admin_type = SharedPreferenceManager.getDefaults("type", getApplicationContext());
         Log.e(TAG, "onCreate login phone: " + Login_User);
+        Log.e(TAG, "onCreate login phone: " + admin_type);
 
-        CheckUserType();
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
 
+        Log.e(TAG, "onCreate external: " + admin_type);
+        if (Intent.ACTION_SEND.equals(action) && type != null && admin_type.contains("admin")) {
+            if (type.startsWith("image/")) {
+                imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                Log.e("handleSendImage admin: ", imageUri + "");
+            } else if (type.startsWith("text/")) {
+                ContactPath = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                Log.e("CONTACT admin", ContactPath + "");
+            } else {
+                FilePath = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                Log.e("FILEPATH admin", FilePath + "");
+            }
+        } else if (admin_type.contains("user")) {
+            if (type.startsWith("image/")) {
+                imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                Log.e("handleSendImage user: ", imageUri + "");
+            } else if (type.startsWith("text/")) {
+                ContactPath = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                Log.e("CONTACT user", ContactPath + "");
+            } else {
+                FilePath = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                Log.e("FILEPATH user", FilePath + "");
+            }
+        } else {
+        }
+
+        if (admin_type.contains("admin")) {
+            CheckUserType();
+        } else if (admin_type.contains("user")) {
+            Intent intent1 = new Intent(this, DataSharing_forUser.class);
+            intent1.putExtra("Click_Phone user",Login_User);
+            if (imageUri != null) {
+                intent1.putExtra("U_IMG_URL", imageUri + "");
+                Log.e("onClick user: ", imageUri + "");
+            } else if (ContactPath != null) {
+                intent1.putExtra("U_CONTACT_URL", ContactPath + "");
+                Log.e("onClick user: ", ContactPath + "");
+            } else {
+                intent1.putExtra("U_FILE_URL", FilePath + "");
+                Log.e("onClick user: ", FilePath + "");
+            }
+            startActivity(intent1);
+            finish();
+            imageUri = null;
+            FilePath = null;
+            ContactPath = null;
+        } else {
+            Toast.makeText(this, TAG + "Sorry Server Cant't Properly Work.", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void IntialAdapter() {
@@ -80,7 +141,7 @@ public class UserList extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.menu_search, menu);
+        menuInflater.inflate(R.menu.menu_in_userlistscreen, menu);
         return true;
     }
 
@@ -90,6 +151,43 @@ public class UserList extends AppCompatActivity {
             case R.id.menu_search:
                 Intent intent = new Intent(UserList.this, Search.class);
                 startActivity(intent);
+                return true;
+
+            case R.id.action_settings:
+
+                Intent setting = new Intent(UserList.this, User_Setting.class);
+                startActivity(setting);
+
+                return true;
+
+            case R.id.action_logout:
+
+                new AlertDialog.Builder(this)
+                        .setTitle("Logout")
+                        .setMessage("Would you like to logout?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                Intent logout = new Intent(UserList.this, Login.class);
+                                // this flag prevent back to in to application after logout.
+                                logout.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                                        Intent.FLAG_ACTIVITY_NEW_TASK
+                                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                SharedPreferenceManager.ClearAllPreferences(getApplicationContext());
+                                Login.settings.edit().clear().apply();
+                                startActivity(logout);
+                                finish();
+
+
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // user doesn't want to logout
+                            }
+                        })
+                        .show();
+
                 return true;
 
             default:
@@ -106,7 +204,7 @@ public class UserList extends AppCompatActivity {
                     @Override
                     public void onResponse(String response) {
                         //loading.dismiss();
-                        hello = new ArrayList<>();
+                        hello = new ArrayList<>(); //helloo
                         if (response != null) {
                             try {
                                 Log.e("full OnResponse", response);
@@ -119,7 +217,14 @@ public class UserList extends AppCompatActivity {
                                     HashMap<String, String> map = new HashMap<>();
                                     map.put("username", object.getString(Config.KEY_USERNAME));
                                     map.put("phone", object.getString(Config.KEY_PHONE));
+                                    //map.put("type",object.getString("type"));
 
+                                    /*if(Objects.equals(Config.KEY_TYPE, "admin"))
+                                    {
+                                        Intent dataToAdmin=new Intent(UserList.this,Data_Sharing.class);
+                                        startActivity(dataToAdmin);
+                                    }
+*/
                                     Log.e(TAG, "onResponse: map result " + map);
 
                                     hello.add(map);
@@ -154,8 +259,6 @@ public class UserList extends AppCompatActivity {
         //Adding request the the queue
         requestQueue.add(stringRequest);
     }
-
-    
 
     class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         private ArrayList<HashMap<String, String>> mDataset;
@@ -194,11 +297,25 @@ public class UserList extends AppCompatActivity {
                     User_Click_Phone = mDataset.get(position).get(Config.KEY_PHONE);
                     Intent i = new Intent(UserList.this, Data_Sharing.class);
                     Bundle extras = new Bundle();
-                    extras.putString("Click_Phone",User_Click_Phone);
-                    extras.putString(Config.KEY_USERNAME,mDataset.get(position).get(Config.KEY_USERNAME));
+                    extras.putString("Click_Phone", User_Click_Phone);
+                    extras.putString(Config.KEY_USERNAME, mDataset.get(position).get(Config.KEY_USERNAME));
                     i.putExtras(extras);
+                    if (admin_type.contains("admin")) {
+                        if (imageUri != null) {
+                            i.putExtra("IMG_URL", imageUri + "");
+                            Log.e("onClick admin: ", imageUri + "");
+                        } else if (ContactPath != null) {
+                            i.putExtra("Contact_URL", ContactPath + "");
+                            Log.e("onClick admin: ", ContactPath + "");
+                        } else {
+                            i.putExtra("FILE_URL", FilePath + "");
+                            Log.e("onClick admin: ", FilePath + "");
+                        }
+                    }
                     startActivity(i);
-
+                    imageUri = null;
+                    FilePath = null;
+                    ContactPath = null;
                 }
             });
 

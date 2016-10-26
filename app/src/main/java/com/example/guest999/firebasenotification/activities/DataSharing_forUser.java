@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -43,7 +44,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.guest999.firebasenotification.Config;
 import com.example.guest999.firebasenotification.R;
-import com.example.guest999.firebasenotification.adapters.DataAdapter;
+import com.example.guest999.firebasenotification.adapters.DataAdapter_User;
 import com.example.guest999.firebasenotification.utilis.FilePath;
 import com.example.guest999.firebasenotification.utilis.JSONParser;
 import com.example.guest999.firebasenotification.utilis.MarshmallowPermissions;
@@ -73,13 +74,14 @@ import static com.example.guest999.firebasenotification.Config.PhoneFromURl;
  * Created by Harshad and Modified Joshi Tushar
  */
 
-public class Data_Sharing extends AppCompatActivity implements View.OnClickListener {
+public class DataSharing_forUser extends AppCompatActivity implements View.OnClickListener {
 
     public static final int RESULT_LOAD_FILE = 0;
     public static final int RESULT_LOAD_IMAGE = 1;
     public static final int RESULT_LOAD_IMAGE_CAPTURE = 2;
     public static final int RESULT_OK = -1;
     private static final int REQUEST_CODE_PICK_CONTACTS = 99;
+
     public static ArrayList<HashMap<String, String>> hello;
     public static SharedPreferences settings;
     protected String user_Click_Phone, image_external_Url, file_extenal_Url, contact_external_url;
@@ -93,8 +95,9 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
     int startradius, endradius, reverse_startradius, reverse_endradius;
     Animator animator, animate;
     String TAG = getClass().getName();
-    String date, time, ampma, Login_User, fileName, mCurrentPhotoPath, phoneNo, name;
+    String date, time, ampma, Login_User, type, fileName, mCurrentPhotoPath, phoneNo, name;
     private JSONParser jsonParser = new JSONParser();
+    //ProgressDialog loading;
     private Dialog dialog;
     private String selectedFilePath = null;
     private RequestQueue requestQueue;
@@ -102,44 +105,50 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
     private Animation fab_open, fab_close;
     private Uri contactData;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        type = SharedPreferenceManager.getDefaults("type", DataSharing_forUser.this);
+        Login_User = SharedPreferenceManager.getDefaults("phone", getApplicationContext());
 
-        String type = SharedPreferenceManager.getDefaults("type", Data_Sharing.this);
-        Login_User = SharedPreferenceManager.getDefaults("phone", Data_Sharing.this);
-
-        if (type.contains("admin")) {
-            Log.e(TAG, "onCreate external: " + type);
+        if (type.contains("user")) {
             Intent i = getIntent();
             Bundle extra = i.getExtras();
             user_Click_Phone = extra.getString("Click_Phone");
-            image_external_Url = i.getStringExtra("IMG_URL");
-            file_extenal_Url = i.getStringExtra("FILE_URL");
-            contact_external_url = i.getStringExtra("Contact_URL");
-            Log.e(TAG, "onCreate: " + user_Click_Phone);
-            Log.e(TAG, "onCreate: " + image_external_Url);
-            Log.e(TAG, "onCreate: " + file_extenal_Url);
-            Log.e(TAG, "onCreate: " + contact_external_url);
-            String user_click_name = extra.getString(Config.KEY_USERNAME);
+            Log.e(TAG, "onCreatedsfu: " + user_Click_Phone);
 
+           /* if (user_Click_Phone == null) {
+                Intent intent = getIntent();
+                Bundle extras = intent.getExtras();*/
+            //user_Click_Phone = extras.getString("Click_Phone");
+            image_external_Url = i.getStringExtra("U_IMG_URL");
+            file_extenal_Url = i.getStringExtra("U_FILE_URL");
+            contact_external_url = i.getStringExtra("U_CONTACT_URL");
+
+            Log.e(TAG, "onCreatedsfu: " + image_external_Url);
+            Log.e(TAG, "onCreatedsfu: " + file_extenal_Url);
+            Log.e(TAG, "onCreatedsfu: " + contact_external_url);
+            //  }
             getSupportActionBar().setTitle(null);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            toolbar.setTitle(user_click_name);
+            toolbar.setTitle("P. L. Shah & Co.");
+            toolbar.setPadding(20, 0, 0, 0);
         } else {
             Toast.makeText(this, TAG + "Sorry Server Cant't Properly Work.", Toast.LENGTH_LONG).show();
         }
-        requestQueue = Volley.newRequestQueue(this);
 
-        marsh = new MarshmallowPermissions(Data_Sharing.this);
+
+        requestQueue = Volley.newRequestQueue(this);
+        settings = getSharedPreferences(Login.PREFS_NAME, 0);
+
+        marsh = new MarshmallowPermissions(DataSharing_forUser.this);
         marsh.chkpermissions();
         hello = new ArrayList<>();
-        dialog = new Dialog(Data_Sharing.this);
+        dialog = new Dialog(DataSharing_forUser.this);
         Loaduiele();
         recyclerView = (RecyclerView) findViewById(R.id.recycler);
 
@@ -199,10 +208,10 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
 
         if (selectedFilePath != null && !selectedFilePath.isEmpty()) {
 
-            dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
+            dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
 
             Date currentDate = Calendar.getInstance().getTime();
-            java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm a");
             String formattedCurrentDate = simpleDateFormat.format(currentDate);
 
             String[] splited = formattedCurrentDate.split("\\s+");
@@ -216,7 +225,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                 public void run() {
                     //creating new thread to handle Http Operations
                     uploadFile(selectedFilePath);
-                    new UploadImage().execute(selectedFilePath);
+                    new DataSharing_forUser.UploadImage().execute(selectedFilePath);
 
                 }
             }).start();
@@ -237,9 +246,9 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         //FilePaths.add(setGet);
         if (selectedFilePath != null && !selectedFilePath.isEmpty()) {
 
-            dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
+            dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
             Date currentDate = Calendar.getInstance().getTime();
-            java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm a");
             String formattedCurrentDate = simpleDateFormat.format(currentDate);
 
             String[] splited = formattedCurrentDate.split("\\s+");
@@ -253,7 +262,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                 public void run() {
                     //creating new thread to handle Http Operations
                     uploadFile(selectedFilePath);
-                    new UploadImage().execute(selectedFilePath);
+                    new DataSharing_forUser.UploadImage().execute(selectedFilePath);
 
                 }
             }).start();
@@ -270,7 +279,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.scrollToPosition(hello.size() - 1);
-        recyclerView.setAdapter(new DataAdapter(getApplicationContext(), hello));
+        recyclerView.setAdapter(new DataAdapter_User(getApplicationContext(), hello));
     }
 
     private void Loaduiele() {
@@ -296,30 +305,52 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.camera:
+                Snackbar.make(v, "Camera Clicked", Snackbar.LENGTH_SHORT).show();
                 activeTakePhoto();
                 mRevealView.setVisibility(View.INVISIBLE);
                 hidden = true;
                 break;
 
             case R.id.gallery:
+                Snackbar.make(v, "Gallery Clicked", Snackbar.LENGTH_SHORT).show();
                 activeGallery();
                 mRevealView.setVisibility(View.INVISIBLE);
                 hidden = true;
                 break;
 
             case R.id.document:
+                Snackbar.make(v, "Document Clicked", Snackbar.LENGTH_SHORT).show();
                 FilePicker();
                 mRevealView.setVisibility(View.INVISIBLE);
                 hidden = true;
                 break;
 
             case R.id.contacts:
+                Snackbar.make(v, "Contacts Clicked", Snackbar.LENGTH_SHORT).show();
                 activeContact();
                 mRevealView.setVisibility(View.INVISIBLE);
                 hidden = true;
                 break;
         }
 
+    }
+
+    /**
+     * For sending file intent
+     */
+    public void FilePicker() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        startActivityForResult(intent, RESULT_LOAD_FILE);
+    }
+
+    /**
+     * for gallery intent
+     */
+    private void activeGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, RESULT_LOAD_IMAGE);
     }
 
     /**
@@ -346,32 +377,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private File createImageFile() throws IOException {
-        // Create an gallery file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "";
-        File storageDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES);
-
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = image.getAbsolutePath();
-        Log.e("Getpath", "Cool" + mCurrentPhotoPath);
-        return image;
-    }
-
-    public void FilePicker() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
-        startActivityForResult(intent, RESULT_LOAD_FILE);
-    }
-
     /**
      * For Intent Contact
      */
@@ -381,27 +386,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         startActivityForResult(intent, REQUEST_CODE_PICK_CONTACTS);
     }
 
-    /**
-     * For Get Contact No and Name
-     */
-    private void ContactNo() {
-        Cursor c = managedQuery(contactData, null, null, null, null);
-        if (c.moveToFirst()) {
-            name = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-
-            int phoneIndex = c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-            phoneNo = c.getString(phoneIndex);
-            Log.e("ContactNo: ", name);
-            Log.e("ContactNo: ", phoneNo);
-            Log.e(TAG, "ContactNo: " + phoneNo + " " + name);
-        }
-
-    }
-
-    private void activeGallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent, RESULT_LOAD_IMAGE);
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -481,34 +465,18 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                     .setMessage("Would you like to logout?")
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
+                            //SharedPreferenceManager.getDefaults_boolean("notification", false, DataSharing_forUser.this);
+                            //settings.edit().clear().apply();
 
-
-                            SharedPreferenceManager.setDefaults_boolean("notification", false, getApplicationContext());
-                            Login.settings.edit().clear().apply();
-                            SharedPreferenceManager.ClearAllPreferences(getApplicationContext());
-                            Intent logout = new Intent(Data_Sharing.this, Login.class);
+                            Intent logout = new Intent(DataSharing_forUser.this, Login.class);
                             // this flag prevent back to in to application after logout.
                             logout.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |
                                     Intent.FLAG_ACTIVITY_NEW_TASK
                                     | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            SharedPreferenceManager.ClearAllPreferences(getApplicationContext());
+                            Login.settings.edit().clear().apply();
                             startActivity(logout);
                             finish();
-
-
-                           /* SharedPreferences preferences =getSharedPreferences(Login.PREFS_NAME, Context.MODE_PRIVATE);
-                            SharedPreferences.Editor editor = preferences.edit();
-                            editor.clear();
-                            editor.commit();
-                            finish();
-                            SharedPreferenceManager.setDefaults_boolean("notification", false, Data_Sharing.this);
-                            settings.edit().clear().apply();
-                            SharedPreferenceManager.ClearAllPreferences(Data_Sharing.this);
-                            Intent logout = new Intent(Data_Sharing.this, Login.class);
-                            // this flag prevent back to in to application after logout.
-                            logout.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |
-                                    Intent.FLAG_ACTIVITY_NEW_TASK
-                                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivity(logout);*/
                         }
                     })
                     .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -568,25 +536,61 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         return super.onTouchEvent(event);
     }
 
+    /**
+     * For Get Contact No and Name
+     */
+    private void ContactNo() {
+        Cursor c = managedQuery(contactData, null, null, null, null);
+        if (c.moveToFirst()) {
+            name = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+
+            int phoneIndex = c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+            phoneNo = c.getString(phoneIndex);
+            Log.e("ContactNo: ", name);
+            Log.e("ContactNo: ", phoneNo);
+            Log.e(TAG, "ContactNo: " + phoneNo + " " + name);
+        }
+
+    }
+
+    /**
+     * For Save Image
+     */
+    private File createImageFile() throws IOException {
+        // Create an gallery file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "";
+        File storageDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES);
+
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = image.getAbsolutePath();
+        Log.e("Getpath", "Cool" + mCurrentPhotoPath);
+        return image;
+    }
+
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-
-
             case RESULT_LOAD_IMAGE:
                 if (resultCode == RESULT_OK && null != data) {
                     final Uri filePath = data.getData();
                     Log.e("IMAGE", filePath + "");
                     selectedFilePath = FilePath.getPath(this, filePath);
-                    //setGet.path(String.valueOf(filePath));
-                    //FilePaths.add(setGet);
+
                     if (selectedFilePath != null && !selectedFilePath.isEmpty()) {
 
-                        dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
+                        dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
 
                         //get date and time from device and chane it in fix format
                         Date currentDate = Calendar.getInstance().getTime();
-                        java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm a");
                         String formattedCurrentDate = simpleDateFormat.format(currentDate);
 
                         String[] splited = formattedCurrentDate.split("\\s+");
@@ -622,10 +626,10 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
 
                     /*show_dialog();*/
                     if (selectedFilePath != null && !selectedFilePath.equals("")) {
-                        dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
+                        dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
                         //for getting current date and time
                         Date currentDate = Calendar.getInstance().getTime();
-                        java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm a");
                         String formattedCurrentDate = simpleDateFormat.format(currentDate);
 
                         String[] splited = formattedCurrentDate.split("\\s+");
@@ -658,9 +662,9 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
 
                     if (contactData != null) {
 
-                        dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
+                        dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
                         Date currentDate = Calendar.getInstance().getTime();
-                        java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm a");
                         String formattedCurrentDate = simpleDateFormat.format(currentDate);
 
                         String[] splited = formattedCurrentDate.split("\\s+");
@@ -686,9 +690,9 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                     selectedFilePath = mCurrentPhotoPath;
                     Log.e(TAG, "onActivityResult: " + selectedFilePath);
                     if (selectedFilePath != null && !selectedFilePath.equals("")) {
-                        dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
+                        dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
                         Date currentDate = Calendar.getInstance().getTime();
-                        java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm a");
                         String formattedCurrentDate = simpleDateFormat.format(currentDate);
 
                         String[] splited = formattedCurrentDate.split("\\s+");
@@ -700,7 +704,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                             public void run() {
                                 //creating new thread to handle Http Operations
                                 uploadFile(selectedFilePath);
-                                new Data_Sharing.UploadImage().execute(selectedFilePath);
+                                new UploadImage().execute(selectedFilePath);
 
                             }
                         }).start();
@@ -713,7 +717,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         if (selectedFilePath != null && !selectedFilePath.isEmpty()) {
             IntialAdapter();
         }
-
     }
 
     //android upload file or image to servee folder
@@ -841,7 +844,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
 
         /*final ProgressDialog loading = ProgressDialog.show(this, "Loading Data", "Please wait...", false, false);*/
 
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, Config.LOAD_USERDATA,
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, Config.USER_SCREEN,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -849,7 +852,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                         hello = new ArrayList<>();
                         if (response != null) {
                             try {
-                                Log.e("Full OnResponse", response);
+                                Log.e("Full OnResponse Data for user", response);
                                 JSONObject jsonObject = new JSONObject(response);
                                 JSONArray jsonArray = jsonObject.getJSONArray("userlist");
 
@@ -883,7 +886,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         //loading.dismiss();
-                        Toast.makeText(Data_Sharing.this, "error", Toast.LENGTH_LONG).show();
+                        Toast.makeText(DataSharing_forUser.this, "error", Toast.LENGTH_LONG).show();
                         Log.e("onErrorResponse: ", error + "");
                     }
                 }) {
@@ -891,8 +894,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
                 //Adding the parameters to the request
-                params.put(Config.KEY_PHONE, user_Click_Phone);
-                params.put(Config.KEY_A_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
+                params.put(Config.KEY_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
                 Log.e(TAG, "getParams: " + params);
                 return params;
             }
@@ -920,7 +922,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
 
-            marsh = new MarshmallowPermissions(Data_Sharing.this);
+            marsh = new MarshmallowPermissions(DataSharing_forUser.this);
 
             if (marsh.chkpermissions())
                 LoadUserData();
@@ -928,15 +930,13 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
 
         @Override
         protected String doInBackground(String... params) {
-
             HashMap<String, String> data = new HashMap<>();
-            data.put(Config.KEY_PHONE, user_Click_Phone);
             data.put(UPLOAD_KEY, fileName);
-            data.put(Config.KEY_A_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
+            data.put(Config.KEY_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
             data.put(Config.CURRENT_DATE, date);
             data.put(Config.CURRENT_TIME, time + " " + ampma);
             Log.e("HashMap data: ", data + "");
-            String result = jsonParser.sendPostRequest(Config.SEND_USERDATA, data);
+            String result = jsonParser.sendPostRequest(Config.FILESEND_USER, data);
             Log.e("result: ", result);
             return result;
         }
@@ -956,7 +956,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
 
-            marsh = new MarshmallowPermissions(Data_Sharing.this);
+            marsh = new MarshmallowPermissions(DataSharing_forUser.this);
 
             if (marsh.chkpermissions())
                 LoadUserData();
@@ -971,10 +971,9 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
             data.put(Config.CURRENT_DATE, date);
             data.put(Config.CURRENT_TIME, time + " " + ampma);
             Log.e("HashMap data: ", data + "");
-            String result = jsonParser.sendPostRequest(Config.COTACTSEND_ADMIN, data);
+            String result = jsonParser.sendPostRequest(Config.COTACTSEND_USER, data);
             Log.e("result: ", result);
             return result;
         }
     }
-
 }

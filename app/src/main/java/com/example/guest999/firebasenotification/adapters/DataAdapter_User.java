@@ -20,10 +20,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Created by Harshad and Modified Joshi Tushar
+ * Created by Harshad on 25-10-2016 at 09:46 AM.
  */
-
-public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
+public class DataAdapter_User extends RecyclerView.Adapter {
     private static final int RESULT_LOAD_FILE = 0;
     private static final int RESULT_LOAD_IMAGE = 1;
     private static final int REQUEST_CODE_PICK_CONTACTS = 99;
@@ -31,11 +30,10 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
     private LayoutInflater inflater = null;
     private Context context;
 
-
-    public DataAdapter(Context mcontext, ArrayList<HashMap<String, String>> file_paths) {
-        context = mcontext;
+    public DataAdapter_User(Context applicationContext, ArrayList<HashMap<String, String>> hello) {
+        context = applicationContext;
         inflater = LayoutInflater.from(context);
-        DataAdapter.file_paths = file_paths;
+        DataAdapter_User.file_paths = hello;
     }
 
     @Override
@@ -61,8 +59,9 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
         }
     }
 
+
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v;
 
         Log.e("layout code: ", viewType + "");
@@ -70,21 +69,20 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
         if (viewType == RESULT_LOAD_FILE) {
             v = inflater
                     .inflate(R.layout.raw_file, parent, false);
-            return new FilePick(v);
-        } else if (viewType == RESULT_LOAD_IMAGE) {
+            return new DataAdapter_User.FilePick(v);
+        } else if (viewType == RESULT_LOAD_IMAGE){
             v = inflater
                     .inflate(R.layout.raw_image, parent, false);
-            return new ImagePick(v);
-        } else {
+            return new DataAdapter_User.ImagePick(v);
+        }else {
             v = inflater
                     .inflate(R.layout.raw_contact, parent, false);
-            return new ContactPick(v);
+            return new DataAdapter_User.ContactPick(v);
         }
-
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
         String ad_date = file_paths.get(position).get(Config.CURRENT_DATE);
         String ad_time = file_paths.get(position).get(Config.CURRENT_TIME);
@@ -92,8 +90,8 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
 
         Log.e("onBindViewHolder:pos ", String.valueOf(position));
 
-        if (holder instanceof FilePick) {
-            FilePick file = (FilePick) holder;
+        if (holder instanceof DataAdapter_User.FilePick) {
+            DataAdapter_User.FilePick file = (DataAdapter_User.FilePick) holder;
             String pdfname = file_paths.get(position).get(Config.TAG_DATA).replace("http://www.laxmisecurity.com/android/uploads/", "");
 
             file.temp.setText(pdfname.substring(10));
@@ -113,9 +111,9 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
                 file.linearLayout.setGravity(Gravity.RIGHT | Gravity.BOTTOM);
                 file.outgoing_layout_bubble.setBackgroundResource(R.drawable.balloon_outgoing_normal);
             }
-        } else if (holder instanceof ImagePick) {
+        } else if (holder instanceof DataAdapter_User.ImagePick) {
             final String Image_name = file_paths.get(position).get(Config.TAG_DATA);
-            ImagePick image = (ImagePick) holder;
+            DataAdapter_User.ImagePick image = (DataAdapter_User.ImagePick) holder;
             image.textview_time.setText(ad_time);
             image.textview_date.setText(ad_date);
             Picasso.with(context)
@@ -137,37 +135,41 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
                 image.linearLayout.setGravity(Gravity.RIGHT | Gravity.BOTTOM);
                 image.outgoing_layout_bubble.setBackgroundResource(R.drawable.balloon_outgoing_normal);
             }
-        } else if (holder instanceof ContactPick) {
+        }
+        else if (holder instanceof DataAdapter_User.ContactPick) {
             final String Contact_name = file_paths.get(position).get(Config.TAG_DATA);
-            ContactPick contactPick = (ContactPick) holder;
+            DataAdapter_User.ContactPick contactPick = (DataAdapter_User.ContactPick) holder;
 
 
             String[] splited = Contact_name.split("\\s+");
             String phone_no = splited[0];
             String phone_name = splited[1];
 
-            Log.e("onBindViewHolder: ",phone_no );
-            Log.e("onBindViewHolder: ",phone_name );
+            Log.e("onBindViewHolder: ", phone_no);
+            Log.e("onBindViewHolder: ", phone_name);
 
             contactPick.no.setText(phone_no);
             contactPick.name.setText(phone_name);
             contactPick.textview_time.setText(ad_time);
             contactPick.textview_date.setText(ad_date);
-            if (file_paths.get(position).get(Config.KEY_PHONE).equals(Config.PhoneFromDevice)) {
+            if (!file_paths.get(position).get(Config.KEY_PHONE).equals(Config.PhoneFromDevice)) {
                 //file.status.setText(R.string.reveived);
+
+                contactPick.outgoing_layout_bubble.setGravity(Gravity.LEFT | Gravity.BOTTOM);
+                contactPick.linearLayout.setGravity(Gravity.LEFT | Gravity.BOTTOM);
+                contactPick.outgoing_layout_bubble.setBackgroundResource(R.drawable.balloon_incoming_normal);
+
+            } else {
+                //file.status.setText(R.string.sent);
 
                 contactPick.outgoing_layout_bubble.setGravity(Gravity.RIGHT | Gravity.BOTTOM);
                 contactPick.linearLayout.setGravity(Gravity.RIGHT | Gravity.BOTTOM);
                 contactPick.outgoing_layout_bubble.setBackgroundResource(R.drawable.balloon_outgoing_normal);
-
-            } else {
-                //file.status.setText(R.string.sent);
-                contactPick.outgoing_layout_bubble.setGravity(Gravity.LEFT | Gravity.BOTTOM);
-                contactPick.linearLayout.setGravity(Gravity.LEFT | Gravity.BOTTOM);
-                contactPick.outgoing_layout_bubble.setBackgroundResource(R.drawable.balloon_incoming_normal);
             }
         }
+
     }
+
 
     @Override
     public int getItemCount() {
@@ -181,7 +183,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
 
     }
 
-    private class FilePick extends ViewHolder {
+    private class FilePick extends DataAdapter_User.ViewHolder {
         TextView temp;
         TextView status, textview_time, textview_date;
         RelativeLayout outgoing_layout_bubble;
@@ -198,7 +200,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
         }
     }
 
-    private class ImagePick extends ViewHolder {
+    private class ImagePick extends DataAdapter_User.ViewHolder {
         ImageView score;
         TextView status, textview_time, textview_date;
         RelativeLayout outgoing_layout_bubble;
@@ -215,7 +217,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
 
         }
     }
-    private class ContactPick extends ViewHolder {
+    private class ContactPick extends DataAdapter_User.ViewHolder {
         TextView status, textview_time, textview_date, no, name;
         RelativeLayout outgoing_layout_bubble;
         LinearLayout linearLayout;
@@ -231,4 +233,5 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
             this.linearLayout = (LinearLayout) v.findViewById(R.id.mainlinearlayout);
         }
 
-    }}
+    }
+}
