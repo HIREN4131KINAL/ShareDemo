@@ -5,7 +5,7 @@
     android:id="@+id/mainlinearlayout"
     android:orientation="vertical">
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/outgoing_layout_bubble"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -123,5 +123,5 @@
             </LinearLayout>
         </LinearLayout>
 
-    </RelativeLayout>
+    </LinearLayout>
 </LinearLayout>

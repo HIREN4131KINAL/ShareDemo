@@ -1,5 +1,6 @@
 package com.example.guest999.firebasenotification.activities;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Dialog;
@@ -7,6 +8,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -15,7 +17,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
-import android.support.design.widget.Snackbar;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -49,6 +51,7 @@ import com.example.guest999.firebasenotification.utilis.FilePath;
 import com.example.guest999.firebasenotification.utilis.JSONParser;
 import com.example.guest999.firebasenotification.utilis.MarshmallowPermissions;
 import com.example.guest999.firebasenotification.utilis.SharedPreferenceManager;
+import com.kosalgeek.android.caching.FileCacher;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -70,24 +73,29 @@ import java.util.Map;
 
 import static com.example.guest999.firebasenotification.Config.PhoneFromDevice;
 import static com.example.guest999.firebasenotification.Config.PhoneFromURl;
-/**
- * Created by Harshad and Modified Joshi Tushar
- */
 
 public class DataSharing_forUser extends AppCompatActivity implements View.OnClickListener {
 
+    private static final int REQUEST_PERMISSION = 1;
     public static final int RESULT_LOAD_FILE = 0;
     public static final int RESULT_LOAD_IMAGE = 1;
     public static final int RESULT_LOAD_IMAGE_CAPTURE = 2;
     public static final int RESULT_OK = -1;
     private static final int REQUEST_CODE_PICK_CONTACTS = 99;
-
     public static ArrayList<HashMap<String, String>> hello;
-    public static SharedPreferences settings;
-    protected String user_Click_Phone, image_external_Url, file_extenal_Url, contact_external_url;
+
+    //
+    DataAdapter_User dataAdapter_user;
+    View vg;
+    public String LocalfilePath;
+    FileCacher<ArrayList<HashMap<String, String>>> stringCacher = new FileCacher<>(DataSharing_forUser.this, "cache_tmp.txt");
+
     RecyclerView recyclerView;
     Toolbar toolbar;
     MarshmallowPermissions marsh;
+    public static SharedPreferences settings;
+    protected String user_Click_Phone, image_external_Url, file_extenal_Url, contact_external_url;
+
     boolean hidden = true;
     LinearLayout mRevealView;
     ImageButton ib_camera, ib_gallery, ib_contacts, ib_document;
@@ -97,13 +105,13 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
     String TAG = getClass().getName();
     String date, time, ampma, Login_User, type, fileName, mCurrentPhotoPath, phoneNo, name;
     private JSONParser jsonParser = new JSONParser();
-    //ProgressDialog loading;
     private Dialog dialog;
     private String selectedFilePath = null;
     private RequestQueue requestQueue;
     private Boolean isFabOpen = false;
     private Animation fab_open, fab_close;
     private Uri contactData;
+    View parentLayout;
 
 
     @Override
@@ -111,51 +119,37 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        marsh = new MarshmallowPermissions(DataSharing_forUser.this);
+        dialog = new Dialog(DataSharing_forUser.this);
+        parentLayout = findViewById(android.R.id.content);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        type = SharedPreferenceManager.getDefaults("type", DataSharing_forUser.this);
-        Login_User = SharedPreferenceManager.getDefaults("phone", getApplicationContext());
 
-        if (type.contains("user")) {
-            Intent i = getIntent();
-            Bundle extra = i.getExtras();
-            user_Click_Phone = extra.getString("Click_Phone");
-            Log.e(TAG, "onCreatedsfu: " + user_Click_Phone);
+        if (!marsh.checkIfAlreadyhavePermission()) {
+            marsh.requestpermissions();
+        }
 
-           /* if (user_Click_Phone == null) {
-                Intent intent = getIntent();
-                Bundle extras = intent.getExtras();*/
-            //user_Click_Phone = extras.getString("Click_Phone");
-            image_external_Url = i.getStringExtra("U_IMG_URL");
-            file_extenal_Url = i.getStringExtra("U_FILE_URL");
-            contact_external_url = i.getStringExtra("U_CONTACT_URL");
+        VollyRequest();
+        settings = getSharedPreferences(Login.PREFS_NAME, 0);
 
-            Log.e(TAG, "onCreatedsfu: " + image_external_Url);
-            Log.e(TAG, "onCreatedsfu: " + file_extenal_Url);
-            Log.e(TAG, "onCreatedsfu: " + contact_external_url);
-            //  }
-            getSupportActionBar().setTitle(null);
-            toolbar.setTitle("P. L. Shah & Co.");
-            toolbar.setPadding(20, 0, 0, 0);
-        } else {
-            Toast.makeText(this, TAG + "Sorry Server Cant't Properly Work.", Toast.LENGTH_LONG).show();
+        Loaduiele();
+
+        LoadUserData();
+
+        if (stringCacher.hasCache()) {
+            try {
+                hello = stringCacher.readCache();
+                IntialAdapter();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
 
-        requestQueue = Volley.newRequestQueue(this);
-        settings = getSharedPreferences(Login.PREFS_NAME, 0);
-
-        marsh = new MarshmallowPermissions(DataSharing_forUser.this);
-        marsh.chkpermissions();
         hello = new ArrayList<>();
-        dialog = new Dialog(DataSharing_forUser.this);
-        Loaduiele();
-        recyclerView = (RecyclerView) findViewById(R.id.recycler);
 
         fab_open = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open);
         fab_close = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close);
-
-        LoadUserData();
 
         if (image_external_Url != null) {
             handleImage();
@@ -176,6 +170,45 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
             }
         });
     }
+
+    private void VollyRequest() {
+        type = SharedPreferenceManager.getDefaults("type", DataSharing_forUser.this);
+        Login_User = SharedPreferenceManager.getDefaults("phone", getApplicationContext());
+
+        Intent i = getIntent();
+        Bundle extra = i.getExtras();
+        user_Click_Phone = extra.getString("Click_Phone");
+        Log.e(TAG, "onCreatedsfu: " + user_Click_Phone);
+
+           /* if (user_Click_Phone == null) {
+                Intent intent = getIntent();
+                Bundle extras = intent.getExtras();*/
+        //user_Click_Phone = extras.getString("Click_Phone");
+        image_external_Url = i.getStringExtra("U_IMG_URL");
+        file_extenal_Url = i.getStringExtra("U_FILE_URL");
+        contact_external_url = i.getStringExtra("U_CONTACT_URL");
+
+        Log.e(TAG, "onCreatedsfu: " + image_external_Url);
+        Log.e(TAG, "onCreatedsfu: " + file_extenal_Url);
+        Log.e(TAG, "onCreatedsfu: " + contact_external_url);
+        //  }
+        getSupportActionBar().setTitle(null);
+        toolbar.setTitle("P. L. Shah & Co.");
+
+        requestQueue = Volley.newRequestQueue(this);
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        try {
+            stringCacher.writeCache(hello);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * For Get Contact Direct to Contact List
@@ -278,8 +311,12 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
+        Log.e(TAG, "IntialAdapter:called" + hello);
+        dataAdapter_user = new DataAdapter_User(getApplicationContext(), hello);
         recyclerView.scrollToPosition(hello.size() - 1);
-        recyclerView.setAdapter(new DataAdapter_User(getApplicationContext(), hello));
+        dataAdapter_user.notifyItemInserted(hello.size() - 1);
+        recyclerView.setAdapter(dataAdapter_user);
+
     }
 
     private void Loaduiele() {
@@ -299,35 +336,49 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
         ib_document.setOnClickListener(this);
 
         mRevealView.setVisibility(View.INVISIBLE);
+
+        recyclerView = (RecyclerView) findViewById(R.id.recycler);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.camera:
-                Snackbar.make(v, "Camera Clicked", Snackbar.LENGTH_SHORT).show();
-                activeTakePhoto();
+                if (marsh.checkIfAlreadyhavePermission()) {
+                    activeTakePhoto();
+                } else {
+                    marsh.requestpermissions();
+                }
                 mRevealView.setVisibility(View.INVISIBLE);
                 hidden = true;
                 break;
 
             case R.id.gallery:
-                Snackbar.make(v, "Gallery Clicked", Snackbar.LENGTH_SHORT).show();
-                activeGallery();
+                if (marsh.checkIfAlreadyhavePermission()) {
+                    activeGallery();
+                } else {
+                    marsh.requestpermissions();
+                }
                 mRevealView.setVisibility(View.INVISIBLE);
                 hidden = true;
                 break;
 
             case R.id.document:
-                Snackbar.make(v, "Document Clicked", Snackbar.LENGTH_SHORT).show();
-                FilePicker();
+                if (marsh.checkIfAlreadyhavePermission()) {
+                    FilePicker();
+                } else {
+                    marsh.requestpermissions();
+                }
                 mRevealView.setVisibility(View.INVISIBLE);
                 hidden = true;
                 break;
 
             case R.id.contacts:
-                Snackbar.make(v, "Contacts Clicked", Snackbar.LENGTH_SHORT).show();
-                activeContact();
+                if (marsh.checkIfAlreadyhavePermission()) {
+                    activeContact();
+                } else {
+                    marsh.requestpermissions();
+                }
                 mRevealView.setVisibility(View.INVISIBLE);
                 hidden = true;
                 break;
@@ -385,7 +436,6 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
         intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
         startActivityForResult(intent, REQUEST_CODE_PICK_CONTACTS);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -470,13 +520,14 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
 
                             Intent logout = new Intent(DataSharing_forUser.this, Login.class);
                             // this flag prevent back to in to application after logout.
-                            logout.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                            /*logout.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |
                                     Intent.FLAG_ACTIVITY_NEW_TASK
-                                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);*/
                             SharedPreferenceManager.ClearAllPreferences(getApplicationContext());
                             Login.settings.edit().clear().apply();
-                            startActivity(logout);
                             finish();
+                            startActivity(logout);
+
                         }
                     })
                     .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -886,7 +937,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         //loading.dismiss();
-                        Toast.makeText(DataSharing_forUser.this, "error", Toast.LENGTH_LONG).show();
+                        Toast.makeText(DataSharing_forUser.this, "No Internet Connection", Toast.LENGTH_LONG).show();
                         Log.e("onErrorResponse: ", error + "");
                     }
                 }) {
@@ -922,9 +973,6 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
 
-            marsh = new MarshmallowPermissions(DataSharing_forUser.this);
-
-            if (marsh.chkpermissions())
                 LoadUserData();
         }
 
@@ -956,9 +1004,6 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
 
-            marsh = new MarshmallowPermissions(DataSharing_forUser.this);
-
-            if (marsh.chkpermissions())
                 LoadUserData();
         }
 
@@ -966,7 +1011,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
         protected String doInBackground(String... params) {
             HashMap<String, String> data = new HashMap<>();
             data.put(Config.KEY_PHONE, user_Click_Phone);
-            data.put(UPLOAD_KEY, phoneNo.replaceAll(" ", "") + " " + name);
+            data.put(UPLOAD_KEY, phoneNo.replaceAll(" ", "") + ":" + name);
             data.put(Config.KEY_A_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
             data.put(Config.CURRENT_DATE, date);
             data.put(Config.CURRENT_TIME, time + " " + ampma);
@@ -974,6 +1019,55 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
             String result = jsonParser.sendPostRequest(Config.COTACTSEND_USER, data);
             Log.e("result: ", result);
             return result;
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public void onRequestPermissionsResult(final int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == REQUEST_PERMISSION) {
+            // for each permission check if the user grantet/denied them
+            // you may want to group the rationale in a single dialog,
+            // this is just an example
+            for (int i = 0, len = permissions.length; i < len; i++) {
+                final String permission = permissions[i];
+                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                    boolean showRationale = shouldShowRequestPermissionRationale(permission);
+                    if (!showRationale) {
+                        // user denied flagging NEVER ASK AGAIN
+                        // you can either enable some fall back,
+                        // disable features of your app
+                        // or open another dialog explaining
+                        // again the permission and directing to
+                        // the app setting
+
+                        marsh.AllowedManually(parentLayout);
+
+
+                    } else if (Manifest.permission.READ_EXTERNAL_STORAGE.equals(permission) || Manifest.permission.READ_EXTERNAL_STORAGE.equals(permission)) {
+                        // showRationale(permission, R.string.permission_denied);
+                        // user denied WITHOUT never ask again
+                        // this is a good place to explain the user
+                        // why you need the permission and ask if he want
+                        // to accept it (the rationale)
+                        marsh.AllowedManually(parentLayout);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        	super.onBackPressed();
+
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        if (!marsh.checkIfAlreadyhavePermission()) {
+            marsh.requestpermissions();
         }
     }
 }

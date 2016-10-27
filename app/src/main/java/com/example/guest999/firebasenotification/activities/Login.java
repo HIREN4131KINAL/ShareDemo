@@ -33,7 +33,6 @@ import com.example.guest999.firebasenotification.NotificationUtils;
 import com.example.guest999.firebasenotification.R;
 import com.example.guest999.firebasenotification.utilis.SharedPreferenceManager;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.kosalgeek.android.caching.MainActivity;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -93,7 +92,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                 intent.putExtra("Click_Phone", Login_User);
                 startActivity(intent);
             }
-            checkLogin();
+            //checkLogin();
         }
 
         setContentView(R.layout.activity_login);
@@ -284,10 +283,9 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         if (v == create_account) {
-            Intent intent = new Intent(Login.this, MainActivity.class);
+            Intent intent = new Intent(Login.this, RegisterActivity.class);
             startActivity(intent);
         }
-
     }
 
     private void requestFocus(View view) {
@@ -417,6 +415,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                                     Intent intent = new Intent(Login.this, DataSharing_forUser.class);
                                     intent.putExtra("Click_Phone", Login_User);
                                     startActivity(intent);
+                                    finish();
                                 }
 
                             } else {

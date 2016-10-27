@@ -1,5 +1,6 @@
 package com.example.guest999.firebasenotification.activities;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Dialog;
@@ -7,6 +8,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -15,6 +17,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -48,6 +51,7 @@ import com.example.guest999.firebasenotification.utilis.FilePath;
 import com.example.guest999.firebasenotification.utilis.JSONParser;
 import com.example.guest999.firebasenotification.utilis.MarshmallowPermissions;
 import com.example.guest999.firebasenotification.utilis.SharedPreferenceManager;
+import com.kosalgeek.android.caching.FileCacher;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -69,24 +73,29 @@ import java.util.Map;
 
 import static com.example.guest999.firebasenotification.Config.PhoneFromDevice;
 import static com.example.guest999.firebasenotification.Config.PhoneFromURl;
-/**
- * Created by Harshad and Modified Joshi Tushar
- */
 
 public class Data_Sharing extends AppCompatActivity implements View.OnClickListener {
-    //testing
 
+    private static final int REQUEST_PERMISSION = 1;
     public static final int RESULT_LOAD_FILE = 0;
     public static final int RESULT_LOAD_IMAGE = 1;
     public static final int RESULT_LOAD_IMAGE_CAPTURE = 2;
     public static final int RESULT_OK = -1;
     private static final int REQUEST_CODE_PICK_CONTACTS = 99;
     public static ArrayList<HashMap<String, String>> hello;
-    public static SharedPreferences settings;
-    protected String user_Click_Phone, image_external_Url, file_extenal_Url, contact_external_url;
+
+    //
+    DataAdapter dataAdapter;
+    View vg;
+    public String LocalfilePath;
+    FileCacher<ArrayList<HashMap<String, String>>> stringCacher = new FileCacher<>(Data_Sharing.this, "cache_tmp.txt");
+
     RecyclerView recyclerView;
     Toolbar toolbar;
     MarshmallowPermissions marsh;
+    public static SharedPreferences settings;
+    protected String user_Click_Phone, image_external_Url, file_extenal_Url, contact_external_url;
+
     boolean hidden = true;
     LinearLayout mRevealView;
     ImageButton ib_camera, ib_gallery, ib_contacts, ib_document;
@@ -102,16 +111,63 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
     private Boolean isFabOpen = false;
     private Animation fab_open, fab_close;
     private Uri contactData;
+    View parentLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-
+        marsh = new MarshmallowPermissions(Data_Sharing.this);
+        dialog = new Dialog(Data_Sharing.this);
+        parentLayout = findViewById(android.R.id.content);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        if (!marsh.checkIfAlreadyhavePermission()) {
+            marsh.requestpermissions();
+        }
+
+        VollyRequest();
+
+        Loaduiele();
+        LoadUserData();
+
+        if (stringCacher.hasCache()) {
+            try {
+                hello = stringCacher.readCache();
+                IntialAdapter();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        hello = new ArrayList<>();
+
+        fab_open = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open);
+        fab_close = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close);
+
+
+        if (image_external_Url != null) {
+            handleImage();
+        } else if (contact_external_url != null) {
+            handleContact();
+        } else if (file_extenal_Url != null) {
+            handleFile();
+        }
+
+        recyclerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (!hidden) {
+                    mRevealView.setVisibility(View.INVISIBLE);
+                    hidden = true;
+                }
+                return false;
+            }
+        });
+    }
+
+    private void VollyRequest() {
         String type = SharedPreferenceManager.getDefaults("type", Data_Sharing.this);
         Login_User = SharedPreferenceManager.getDefaults("phone", Data_Sharing.this);
 
@@ -137,36 +193,16 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         }
         requestQueue = Volley.newRequestQueue(this);
 
-        marsh = new MarshmallowPermissions(Data_Sharing.this);
-        marsh.chkpermissions();
-        hello = new ArrayList<>();
-        dialog = new Dialog(Data_Sharing.this);
-        Loaduiele();
-        recyclerView = (RecyclerView) findViewById(R.id.recycler);
 
-        fab_open = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open);
-        fab_close = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close);
-
-        LoadUserData();
-
-        if (image_external_Url != null) {
-            handleImage();
-        } else if (contact_external_url != null) {
-            handleContact();
-        } else if (file_extenal_Url != null) {
-            handleFile();
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        try {
+            stringCacher.writeCache(hello);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        recyclerView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (!hidden) {
-                    mRevealView.setVisibility(View.INVISIBLE);
-                    hidden = true;
-                }
-                return false;
-            }
-        });
     }
 
     /**
@@ -270,14 +306,19 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
+        Log.e(TAG, "IntialAdapter:called" + hello);
+        dataAdapter = new DataAdapter(getApplicationContext(), hello);
         recyclerView.scrollToPosition(hello.size() - 1);
-        recyclerView.setAdapter(new DataAdapter(getApplicationContext(), hello));
+        dataAdapter.notifyItemInserted(hello.size() - 1);
+        recyclerView.setAdapter(dataAdapter);
     }
 
     private void Loaduiele() {
         FrameLayout item = (FrameLayout) findViewById(R.id.frame_layout);
         View child = getLayoutInflater().inflate(R.layout.view_menu, null);
         item.addView(child);
+
+        recyclerView = (RecyclerView) findViewById(R.id.recycler);
 
         mRevealView = (LinearLayout) child.findViewById(R.id.reveal_items);
         ib_camera = (ImageButton) child.findViewById(R.id.camera);
@@ -297,25 +338,42 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.camera:
-                activeTakePhoto();
+
+                if (marsh.checkIfAlreadyhavePermission()) {
+                    activeTakePhoto();
+                } else {
+                    marsh.requestpermissions();
+                }
                 mRevealView.setVisibility(View.INVISIBLE);
                 hidden = true;
                 break;
 
             case R.id.gallery:
-                activeGallery();
+                if (marsh.checkIfAlreadyhavePermission()) {
+                    activeGallery();
+                } else {
+                    marsh.requestpermissions();
+                }
                 mRevealView.setVisibility(View.INVISIBLE);
                 hidden = true;
                 break;
 
             case R.id.document:
-                FilePicker();
+                if (marsh.checkIfAlreadyhavePermission()) {
+                    FilePicker();
+                } else {
+                    marsh.requestpermissions();
+                }
                 mRevealView.setVisibility(View.INVISIBLE);
                 hidden = true;
                 break;
 
             case R.id.contacts:
-                activeContact();
+                if (marsh.checkIfAlreadyhavePermission()) {
+                    activeContact();
+                } else {
+                    marsh.requestpermissions();
+                }
                 mRevealView.setVisibility(View.INVISIBLE);
                 hidden = true;
                 break;
@@ -572,8 +630,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-
-
             case RESULT_LOAD_IMAGE:
                 if (resultCode == RESULT_OK && null != data) {
                     final Uri filePath = data.getData();
@@ -621,7 +677,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                     selectedFilePath = FilePath.substring(FilePath.lastIndexOf("/") + 1);
                     Log.e("onActivityResult: ", selectedFilePath);
 
-                    /*show_dialog();*/
                     if (selectedFilePath != null && !selectedFilePath.equals("")) {
                         dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
                         //for getting current date and time
@@ -841,7 +896,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
     private void LoadUserData() {
 
         /*final ProgressDialog loading = ProgressDialog.show(this, "Loading Data", "Please wait...", false, false);*/
-
         StringRequest stringRequest = new StringRequest(Request.Method.POST, Config.LOAD_USERDATA,
                 new Response.Listener<String>() {
                     @Override
@@ -884,7 +938,8 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         //loading.dismiss();
-                        Toast.makeText(Data_Sharing.this, "error", Toast.LENGTH_LONG).show();
+                        Toast.makeText(Data_Sharing.this, "No Internet connection", Toast.LENGTH_LONG).show();
+
                         Log.e("onErrorResponse: ", error + "");
                     }
                 }) {
@@ -921,9 +976,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
 
-            marsh = new MarshmallowPermissions(Data_Sharing.this);
-
-            if (marsh.chkpermissions())
                 LoadUserData();
         }
 
@@ -934,6 +986,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
             data.put(Config.KEY_PHONE, user_Click_Phone);
             data.put(UPLOAD_KEY, fileName);
             data.put(Config.KEY_A_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
+            // data.put(LOCAL_PATH, LocalfilePath);
             data.put(Config.CURRENT_DATE, date);
             data.put(Config.CURRENT_TIME, time + " " + ampma);
             Log.e("HashMap data: ", data + "");
@@ -957,9 +1010,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
 
-            marsh = new MarshmallowPermissions(Data_Sharing.this);
-
-            if (marsh.chkpermissions())
                 LoadUserData();
         }
 
@@ -967,7 +1017,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         protected String doInBackground(String... params) {
             HashMap<String, String> data = new HashMap<>();
             data.put(Config.KEY_PHONE, user_Click_Phone);
-            data.put(UPLOAD_KEY, phoneNo.replaceAll(" ", "") + " " + name);
+            data.put(UPLOAD_KEY, phoneNo.replaceAll(" ", "") + ":" + name);
             data.put(Config.KEY_A_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
             data.put(Config.CURRENT_DATE, date);
             data.put(Config.CURRENT_TIME, time + " " + ampma);
@@ -978,4 +1028,52 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public void onRequestPermissionsResult(final int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == REQUEST_PERMISSION) {
+            // for each permission check if the user grantet/denied them
+            // you may want to group the rationale in a single dialog,
+            // this is just an example
+            for (int i = 0, len = permissions.length; i < len; i++) {
+                final String permission = permissions[i];
+                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                    boolean showRationale = shouldShowRequestPermissionRationale(permission);
+                    if (!showRationale) {
+                        // user denied flagging NEVER ASK AGAIN
+                        // you can either enable some fall back,
+                        // disable features of your app
+                        // or open another dialog explaining
+                        // again the permission and directing to
+                        // the app setting
+
+                        marsh.AllowedManually(parentLayout);
+
+
+                    } else if (Manifest.permission.READ_EXTERNAL_STORAGE.equals(permission) || Manifest.permission.READ_EXTERNAL_STORAGE.equals(permission)) {
+                        // showRationale(permission, R.string.permission_denied);
+                        // user denied WITHOUT never ask again
+                        // this is a good place to explain the user
+                        // why you need the permission and ask if he want
+                        // to accept it (the rationale)
+                        marsh.AllowedManually(parentLayout);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        //	super.onBackPressed();
+
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        if (!marsh.checkIfAlreadyhavePermission()) {
+            marsh.requestpermissions();
+        }
+    }
 }

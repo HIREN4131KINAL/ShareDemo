@@ -38,6 +38,7 @@ public class Config {
     public static final String COTACTSEND_ADMIN = "http://laxmisecurity.com/android/firebase/contact_send.php";
     public static final String COTACTSEND_USER = "http://laxmisecurity.com/android/firebase/contact_send_user.php";
 
+    public static final String INTERNAL_IMAGE_PATH_URI = "http://www.laxmisecurity.com/android/uploads/";
     //Keys to send username, password, phone and otp
     public static final String KEY_USERNAME = "username";
     public static final String KEY_PASSWORD = "password";

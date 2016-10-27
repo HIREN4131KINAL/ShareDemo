@@ -42,7 +42,8 @@
             </intent-filter>
         </service>
 
-        <activity android:name="com.example.guest999.firebasenotification.activities.RegisterActivity" />
+        <activity android:name="com.example.guest999.firebasenotification.activities.RegisterActivity"
+            android:noHistory="true"/>
         <activity android:name="com.example.guest999.firebasenotification.activities.Data_Sharing" />
         <activity android:name="com.example.guest999.firebasenotification.activities.UserList">
             <intent-filter>
@@ -63,7 +64,7 @@
         <activity android:name=".activities.Change_pass" />
 
         <activity android:name=".activities.DataSharing_forUser">
-            <intent-filter>
+           <!-- <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <data android:mimeType="image/*" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -72,7 +73,7 @@
                 <action android:name="android.intent.action.SEND" />
                 <data android:mimeType="*/*" />
                 <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
+            </intent-filter>-->
         </activity>
     </application>
 
