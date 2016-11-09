@@ -85,7 +85,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
     public static ArrayList<HashMap<String, String>> hello;
     public static SharedPreferences settings;
     public String LocalfilePath;
-    protected String user_Click_Phone, image_external_Url, file_extenal_Url, contact_external_url;
+    protected String user_Click_Phone, image_external_Url, file_extenal_Url;
     //
     DataAdapter_User dataAdapter_user;
     View vg;
@@ -149,9 +149,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
 
         if (image_external_Url != null) {
             handleImage();
-        } else if (contact_external_url != null) {
-            handleContact();
-        } else if (file_extenal_Url != null) {
+        }  else if (file_extenal_Url != null) {
             handleFile();
         }
 
@@ -182,11 +180,8 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
         //user_Click_Phone = extras.getString("Click_Phone");
         image_external_Url = i.getStringExtra("U_IMG_URL");
         file_extenal_Url = i.getStringExtra("U_FILE_URL");
-        contact_external_url = i.getStringExtra("U_CONTACT_URL");
-
         Log.e(TAG, "onCreatedsfu: " + image_external_Url);
         Log.e(TAG, "onCreatedsfu: " + file_extenal_Url);
-        Log.e(TAG, "onCreatedsfu: " + contact_external_url);
         //  }
         getSupportActionBar().setTitle(null);
         toolbar.setTitle("P. L. Shah & Co.");
@@ -203,26 +198,6 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * For Get Contact Direct to Contact List
-     */
-    public void handleContact() {
-        Toast.makeText(this, contact_external_url, Toast.LENGTH_LONG).show();
-        Uri uri = Uri.parse(contact_external_url);
-        Log.e("handleContact: ", uri + "");
-
-       /* Cursor c = managedQuery(uri, null, null, null, null);
-        if (c.moveToFirst()) {
-
-            Log.e("handleContact: ", uri + "");
-            name = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-            int phoneIndex = c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-            phoneNo = c.getString(phoneIndex);
-            Log.e("handleContact: ", name);
-            Log.e("handleContact: ", phoneNo);
-        }*/
     }
 
     /**
@@ -274,6 +249,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
         //FilePaths.add(setGet);
         if (selectedFilePath != null && !selectedFilePath.isEmpty()) {
 
+            if (selectedFilePath.endsWith(".pdf") || selectedFilePath.endsWith(".docx") || selectedFilePath.endsWith(".doc") || selectedFilePath.endsWith(".txt")) {
             dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
             Date currentDate = Calendar.getInstance().getTime();
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm a");
@@ -294,7 +270,22 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
 
                 }
             }).start();
-
+            } else {
+                android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(DataSharing_forUser.this);
+                builder.setTitle("Warning For File Choosing");
+                builder.setMessage("File selected by you is not appropriate for this application.");
+                builder.setIcon(R.drawable.warning);
+                builder.setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                FilePicker();
+                            }
+                        });
+                android.support.v7.app.AlertDialog dialog = builder.create();
+                // display dialog
+                dialog.show();
+            }
         } else {
             Toast.makeText(getApplicationContext(), "Please choose a File First", Toast.LENGTH_SHORT).show();
         }
@@ -725,6 +716,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
                             @Override
                             public void run() {
                                 //creating new thread to handle Http Operations
+                                Log.e(TAG, "Selected File Path run:" + selectedFilePath);
                                 uploadFile(selectedFilePath);
                                 new UploadImage().execute(selectedFilePath);
                             }

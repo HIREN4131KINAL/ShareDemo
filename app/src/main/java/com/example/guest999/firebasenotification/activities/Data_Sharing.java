@@ -85,7 +85,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
     public static ArrayList<HashMap<String, String>> hello;
     public static SharedPreferences settings;
     public String LocalfilePath;
-    protected String user_Click_Phone, image_external_Url, file_extenal_Url, contact_external_url;
+    protected String user_Click_Phone, image_external_Url, file_extenal_Url;
     //
     DataAdapter dataAdapter;
     View vg;
@@ -146,8 +146,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
 
         if (image_external_Url != null) {
             handleImage();
-        } else if (contact_external_url != null) {
-            handleContact();
         } else if (file_extenal_Url != null) {
             handleFile();
         }
@@ -175,11 +173,9 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
             user_Click_Phone = extra.getString("Click_Phone");
             image_external_Url = i.getStringExtra("IMG_URL");
             file_extenal_Url = i.getStringExtra("FILE_URL");
-            contact_external_url = i.getStringExtra("Contact_URL");
             Log.e(TAG, "onCreate: " + user_Click_Phone);
             Log.e(TAG, "onCreate: " + image_external_Url);
             Log.e(TAG, "onCreate: " + file_extenal_Url);
-            Log.e(TAG, "onCreate: " + contact_external_url);
             String user_click_name = extra.getString(Config.KEY_USERNAME);
 
             getSupportActionBar().setTitle(null);
@@ -200,26 +196,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
             stringCacher.writeCache(hello);
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    /**
-     * For Get Contact Direct to Contact List
-     */
-    public void handleContact() {
-        Toast.makeText(this, contact_external_url, Toast.LENGTH_LONG).show();
-        Uri uri = Uri.parse(contact_external_url);
-        Log.e("handleContact: ", uri + "");
-
-        Cursor c = managedQuery(uri, null, null, null, null);
-        if (c.moveToFirst()) {
-
-            Log.e("handleContact: ", uri + "");
-            name = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-            int phoneIndex = c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-            phoneNo = c.getString(phoneIndex);
-            Log.e("handleContact: ", name);
-            Log.e("handleContact: ", phoneNo);
         }
     }
 
@@ -271,30 +247,49 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         //setGet.path(String.valueOf(filePath));
         //FilePaths.add(setGet);
         if (selectedFilePath != null && !selectedFilePath.isEmpty()) {
+            if (selectedFilePath.endsWith(".pdf") || selectedFilePath.endsWith(".docx") || selectedFilePath.endsWith(".doc") || selectedFilePath.endsWith(".txt")) {
 
-            dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
-            Date currentDate = Calendar.getInstance().getTime();
-            java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
-            String formattedCurrentDate = simpleDateFormat.format(currentDate);
+                dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
+                Date currentDate = Calendar.getInstance().getTime();
+                java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
+                String formattedCurrentDate = simpleDateFormat.format(currentDate);
 
-            String[] splited = formattedCurrentDate.split("\\s+");
-            date = splited[0];
-            time = splited[1];
-            ampma = splited[2];
+                String[] splited = formattedCurrentDate.split("\\s+");
+                date = splited[0];
+                time = splited[1];
+                ampma = splited[2];
 
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    //creating new thread to handle Http Operations
-                    uploadFile(selectedFilePath);
-                    new UploadImage().execute(selectedFilePath);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //creating new thread to handle Http Operations
+                        uploadFile(selectedFilePath);
+                        new UploadImage().execute(selectedFilePath);
 
-                }
-            }).start();
+                    }
+                }).start();
 
+            } else {
+                android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(Data_Sharing.this);
+                builder.setTitle("Warning For File Choosing");
+                builder.setMessage("File selected by you is not appropriate for this application.");
+                builder.setIcon(R.drawable.warning);
+                builder.setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                FilePicker();
+                            }
+                        });
+                android.support.v7.app.AlertDialog dialog = builder.create();
+                // display dialog
+                dialog.show();
+            }
         } else {
             //Toast.makeText(getApplicationContext(), "Please choose a File First", Toast.LENGTH_SHORT).show();
+
+
         }
 
 
@@ -730,6 +725,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                                 @Override
                                 public void run() {
                                     //creating new thread to handle Http Operations
+                                    Log.e(TAG, "run: " + selectedFilePath);
                                     uploadFile(selectedFilePath);
                                     new UploadImage().execute(selectedFilePath);
                                 }

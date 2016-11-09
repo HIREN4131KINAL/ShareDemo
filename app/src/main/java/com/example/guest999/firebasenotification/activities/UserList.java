@@ -56,7 +56,7 @@ public class UserList extends AppCompatActivity {
     String Login_User, User_Click_Phone, admin_type;
     String TAG = getClass().getName();
     private RequestQueue requestQueue;
-    public Uri imageUri, FilePath, ContactPath;
+    public Uri imageUri, FilePath;
 
 
     @Override
@@ -87,9 +87,6 @@ public class UserList extends AppCompatActivity {
             if (type.startsWith("image/")) {
                 imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 Log.e("handleSendImage admin: ", imageUri + "");
-            } else if (type.startsWith("text/")) {
-                ContactPath = intent.getParcelableExtra(Intent.EXTRA_STREAM);
-                Log.e("CONTACT admin", ContactPath + "");
             } else {
                 FilePath = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 Log.e("FILEPATH admin", FilePath + "");
@@ -98,9 +95,6 @@ public class UserList extends AppCompatActivity {
             if (type.startsWith("image/")) {
                 imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 Log.e("handleSendImage user: ", imageUri + "");
-            } else if (type.startsWith("text/")) {
-                ContactPath = intent.getParcelableExtra(Intent.EXTRA_STREAM);
-                Log.e("CONTACT user", ContactPath + "");
             } else {
                 FilePath = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 Log.e("FILEPATH user", FilePath + "");
@@ -116,10 +110,7 @@ public class UserList extends AppCompatActivity {
             if (imageUri != null) {
                 intent1.putExtra("U_IMG_URL", imageUri + "");
                 Log.e("onClick user: ", imageUri + "");
-            } else if (ContactPath != null) {
-                intent1.putExtra("U_CONTACT_URL", ContactPath + "");
-                Log.e("onClick user: ", ContactPath + "");
-            } else {
+            }  else if(FilePath!=null){
                 intent1.putExtra("U_FILE_URL", FilePath + "");
                 Log.e("onClick user: ", FilePath + "");
             }
@@ -127,7 +118,6 @@ public class UserList extends AppCompatActivity {
             finish();
             imageUri = null;
             FilePath = null;
-            ContactPath = null;
         } else {
             Toast.makeText(this, TAG + "Sorry Server Cant't Properly Work.", Toast.LENGTH_LONG).show();
         }
@@ -321,10 +311,7 @@ public class UserList extends AppCompatActivity {
                         if (imageUri != null) {
                             i.putExtra("IMG_URL", imageUri + "");
                             Log.e("onClick admin: ", imageUri + "");
-                        } else if (ContactPath != null) {
-                            i.putExtra("Contact_URL", ContactPath + "");
-                            Log.e("onClick admin: ", ContactPath + "");
-                        } else {
+                        }else if(FilePath!=null){
                             i.putExtra("FILE_URL", FilePath + "");
                             Log.e("onClick admin: ", FilePath + "");
                         }
@@ -332,7 +319,6 @@ public class UserList extends AppCompatActivity {
                     startActivity(i);
                     imageUri = null;
                     FilePath = null;
-                    ContactPath = null;
                 }
             });
 
