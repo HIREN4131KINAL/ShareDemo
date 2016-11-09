@@ -1,10 +1,17 @@
 package com.example.guest999.firebasenotification.adapters;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
@@ -20,6 +27,7 @@ import com.example.guest999.firebasenotification.Config;
 import com.example.guest999.firebasenotification.R;
 import com.example.guest999.firebasenotification.utilis.DownloadCallBack;
 import com.example.guest999.firebasenotification.utilis.DownloadTaskIMG;
+import com.example.guest999.firebasenotification.utilis.DownloadTaskPDF;
 import com.example.guest999.firebasenotification.utilis.SharedPreferenceManager;
 import com.kosalgeek.android.caching.FileCacher;
 import com.squareup.picasso.Picasso;
@@ -30,6 +38,7 @@ import java.util.HashMap;
 
 import jp.wasabeef.picasso.transformations.GrayscaleTransformation;
 
+import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
 import static com.example.guest999.firebasenotification.Config.PhoneFromDevice;
 
 /**
@@ -38,10 +47,12 @@ import static com.example.guest999.firebasenotification.Config.PhoneFromDevice;
 
 public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> implements DownloadCallBack {
 
+    private static final int REQUEST_WRITE_STORAGE = 112;
     private static final int RESULT_LOAD_FILE = 0;
     private static final int RESULT_LOAD_IMAGE = 1;
     private static final int REQUEST_CODE_PICK_CONTACTS = 99;
     private static DownloadTaskIMG downloadTask;
+    private static DownloadTaskPDF downloadPdf;
     private static ArrayList<HashMap<String, String>> file_paths = new ArrayList<>();
     //
     private File extStore;
@@ -68,17 +79,19 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
 
         // Log.e("getItemViewType:pos ", String.valueOf(position));
         Log.e("IS this PDF ?", String.valueOf(file_paths.get(position).get(Config.TAG_DATA).endsWith(".pdf")));
-        if (file_paths.get(position).get(Config.TAG_DATA).endsWith(".pdf")) {
+        if (file_paths.get(position).get(Config.TAG_DATA).endsWith(".pdf") || file_paths.get(position).get(Config.TAG_DATA).endsWith(".docx") || file_paths.get(position).get(Config.TAG_DATA).endsWith(".doc") || file_paths.get(position).get(Config.TAG_DATA).endsWith(".txt")) {
             return RESULT_LOAD_FILE;
-        } else if (file_paths.get(position).get(Config.TAG_DATA).endsWith(".png")) {
-            return RESULT_LOAD_IMAGE;
-        } else if (file_paths.get(position).get(Config.TAG_DATA).endsWith(".jpg")) {
-            return RESULT_LOAD_IMAGE;
-        } else if (file_paths.get(position).get(Config.TAG_DATA).endsWith(".jpeg")) {
+        }else if (file_paths.get(position).get(Config.TAG_DATA).endsWith(".png") || file_paths.get(position).get(Config.TAG_DATA).endsWith(".jpg") ||file_paths.get(position).get(Config.TAG_DATA).endsWith(".jpeg")) {
             return RESULT_LOAD_IMAGE;
         } else {
             return REQUEST_CODE_PICK_CONTACTS;
         }
+    }
+
+    private void makeRequest() {
+        ActivityCompat.requestPermissions((Activity) context,
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                REQUEST_WRITE_STORAGE);
     }
 
     @Override
@@ -104,7 +117,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, final int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
 
         String ad_date = file_paths.get(position).get(Config.CURRENT_DATE);
         String ad_time = file_paths.get(position).get(Config.CURRENT_TIME);
@@ -113,8 +126,16 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
         Log.e("onBindViewHolder:pos ", String.valueOf(position));
 
         if (holder instanceof FilePick) {
-            FilePick file = (FilePick) holder;
-            String pdfname = file_paths.get(position).get(Config.TAG_DATA).replace("http://www.laxmisecurity.com/android/uploads/", "");
+            final FilePick file = (FilePick) holder;
+            final String pdfname = file_paths.get(position).get(Config.TAG_DATA).replace("http://www.laxmisecurity.com/android/uploads/", "");
+
+            if (file_paths.get(position).get(Config.TAG_DATA).endsWith(".pdf")) {
+                file.file_type_image.setBackgroundResource(R.drawable.pdf);
+            }else if(file_paths.get(position).get(Config.TAG_DATA).endsWith(".docx") || file_paths.get(position).get(Config.TAG_DATA).endsWith(".doc")){
+                file.file_type_image.setBackgroundResource(R.drawable.word);
+            }else if(file_paths.get(position).get(Config.TAG_DATA).endsWith(".txt")){
+                file.file_type_image.setBackgroundResource(R.drawable.txt);
+            }
 
             file.temp.setText(pdfname.substring(10));
             file.textview_time.setText(ad_time);
@@ -125,6 +146,94 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
                     file.outgoing_layout_bubble.setGravity(Gravity.LEFT | Gravity.BOTTOM);
                     file.linearLayout.setGravity(Gravity.LEFT | Gravity.BOTTOM);
                     file.outgoing_layout_bubble.setBackgroundResource(R.drawable.balloon_incoming_normal);
+
+                    file.outgoing_layout_bubble.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            //for downloading pdf 07-10-2016
+                            Log.e("Download Button Clicked", "**********");
+                            //ask for the permission in android M
+                            int permission = ContextCompat.checkSelfPermission(context,
+                                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+                            if (permission != PackageManager.PERMISSION_GRANTED) {
+                                Log.i(TAG, "Permission to storage denied");
+
+                                Toast.makeText(context, "Goto Settings > Apps > GTUExamPapers Enable Storage permission", Toast.LENGTH_LONG).show();
+
+                                if (ActivityCompat.shouldShowRequestPermissionRationale((Activity) context,
+                                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                                    builder.setMessage("Permission to access the SD-CARD is required for this app to Download PDF. ")
+                                            .setTitle("Permission required");
+
+                                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            Log.i(TAG, "Clicked");
+                                            makeRequest();
+                                        }
+                                    });
+
+                                    AlertDialog dialog = builder.create();
+                                    dialog.show();
+
+                                } else {
+                                    makeRequest();
+                                }
+                            }
+
+                            if (permission == PackageManager.PERMISSION_GRANTED) {
+
+                                Log.e("Download Button Clicked", "**********");
+                  /*  Toast.makeText(context, "Download  " + holder.tv_paper_name.getText().toString() + "  " + position,
+                            Toast.LENGTH_LONG).show();*/
+                                File extStore = Environment.getExternalStorageDirectory();
+                                File myFile = new File(extStore.getAbsolutePath() + "/FileSharing/" + file.temp.getText().toString());
+
+                                if (!myFile.exists()) {
+                                    // execute this when the downloader must be fired
+                                    downloadPdf = new DownloadTaskPDF(context, downloadCallBack);
+                                    //   downloadTask.execute("http://ia.tranetech.ae:82/upload/uploads/five-point-someone-chetan-bhagat_ebook.pdf",""+finalHolder.tv_paper_name.getText().toString()+".pdf");
+                                    downloadPdf.execute(file_paths.get(position).get(Config.TAG_DATA), "" + file.temp.getText().toString() );
+                                } else {
+                                    try {
+                                        // File pdfFile = new File(Environment.getExternalStorageDirectory() + "/FileSharing/" + pdfname );  // -> filename
+                                        Uri path = Uri.fromFile(myFile);
+                                        Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+                                        pdfIntent.setDataAndType(path, "application/pdf");
+                                        pdfIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                                        context.startActivity(pdfIntent);
+                                    } catch (ActivityNotFoundException e) {
+                                        Toast.makeText(context, "No Application available to view PDF", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                /*if (myFile.exists()) {
+
+                                    try {
+                                   // File pdfFile = new File(Environment.getExternalStorageDirectory() + "/FileSharing/" + pdfname );  // -> filename
+                                    Uri path = Uri.fromFile(myFile);
+                                    Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+                                    pdfIntent.setDataAndType(path, "application/pdf");
+                                    pdfIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+
+                                        context.startActivity(pdfIntent);
+                                    } catch (ActivityNotFoundException e) {
+                                        Toast.makeText(context, "No Application available to view PDF", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+*/
+                            }
+
+                        }
+                    });
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -134,10 +243,30 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
                     file.outgoing_layout_bubble.setGravity(Gravity.RIGHT | Gravity.BOTTOM);
                     file.linearLayout.setGravity(Gravity.RIGHT | Gravity.BOTTOM);
                     file.outgoing_layout_bubble.setBackgroundResource(R.drawable.balloon_outgoing_normal);
+
+                    file.outgoing_layout_bubble.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            try {
+                                // File pdfFile = new File(Environment.getExternalStorageDirectory() + "/FileSharing/" + pdfname );  // -> filename
+                                String abc = file_paths.get(position).get("local_path");
+                                File file = new File(abc);
+                                Log.e("onClick: check local path", abc);
+                                Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+                                pdfIntent.setDataAndType(Uri.fromFile(file), "application/pdf");
+                                pdfIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                                context.startActivity(pdfIntent);
+                            } catch (ActivityNotFoundException e) {
+                                Toast.makeText(context, "No Application available to view PDF", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+
         } else if (holder instanceof ImagePick) {
             final String Image_name = file_paths.get(position).get(Config.TAG_DATA);
             ImagePick image = (ImagePick) holder;
@@ -186,7 +315,6 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
                     extStore = Environment.getExternalStorageDirectory();
                     myFile = new File(extStore.getAbsolutePath() + "/FileSharing/" + ImageFileName);
 
-
                     if (!myFile.exists()) {
                         // execute this when the downloader must be fired
                         downloadTask = new DownloadTaskIMG(context, Config.INTERNAL_IMAGE_PATH_URI, "" + ImageFileName, downloadCallBack);
@@ -197,7 +325,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
                         if (myFile.exists()) {
                             Uri path = Uri.fromFile(myFile);
                             Intent intent = new Intent(Intent.ACTION_VIEW);
-                            intent.setDataAndType(path, "application/*");
+                            intent.setDataAndType(path, "image/*");
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                             intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
@@ -267,6 +395,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
         TextView status, textview_time, textview_date;
         LinearLayout outgoing_layout_bubble;
         LinearLayout linearLayout;
+        ImageView file_type_image;
 
         FilePick(View v) {
             super(v);
@@ -276,6 +405,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
             this.textview_date = (TextView) v.findViewById(R.id.textview_date);
             this.outgoing_layout_bubble = (LinearLayout) v.findViewById(R.id.outgoing_layout_bubble);
             this.linearLayout = (LinearLayout) v.findViewById(R.id.mainlinearlayout);
+            this.file_type_image = (ImageView) v.findViewById(R.id.file_image);
         }
     }
 
@@ -313,4 +443,6 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
             this.linearLayout = (LinearLayout) v.findViewById(R.id.mainlinearlayout);
         }
     }
+
+
 }

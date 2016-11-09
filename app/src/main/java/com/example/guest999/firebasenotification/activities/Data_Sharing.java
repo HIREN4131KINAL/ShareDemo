@@ -76,26 +76,23 @@ import static com.example.guest999.firebasenotification.Config.PhoneFromURl;
 
 public class Data_Sharing extends AppCompatActivity implements View.OnClickListener {
 
-    private static final int REQUEST_PERMISSION = 1;
     public static final int RESULT_LOAD_FILE = 0;
     public static final int RESULT_LOAD_IMAGE = 1;
     public static final int RESULT_LOAD_IMAGE_CAPTURE = 2;
     public static final int RESULT_OK = -1;
+    private static final int REQUEST_PERMISSION = 1;
     private static final int REQUEST_CODE_PICK_CONTACTS = 99;
     public static ArrayList<HashMap<String, String>> hello;
-
+    public static SharedPreferences settings;
+    public String LocalfilePath;
+    protected String user_Click_Phone, image_external_Url, file_extenal_Url, contact_external_url;
     //
     DataAdapter dataAdapter;
     View vg;
-    public String LocalfilePath;
     FileCacher<ArrayList<HashMap<String, String>>> stringCacher = new FileCacher<>(Data_Sharing.this, "cache_tmp.txt");
-
     RecyclerView recyclerView;
     Toolbar toolbar;
     MarshmallowPermissions marsh;
-    public static SharedPreferences settings;
-    protected String user_Click_Phone, image_external_Url, file_extenal_Url, contact_external_url;
-
     boolean hidden = true;
     LinearLayout mRevealView;
     ImageButton ib_camera, ib_gallery, ib_contacts, ib_document;
@@ -104,6 +101,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
     Animator animator, animate;
     String TAG = getClass().getName();
     String date, time, ampma, Login_User, fileName, mCurrentPhotoPath, phoneNo, name;
+    View parentLayout;
     private JSONParser jsonParser = new JSONParser();
     private Dialog dialog;
     private String selectedFilePath = null;
@@ -111,7 +109,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
     private Boolean isFabOpen = false;
     private Animation fab_open, fab_close;
     private Uri contactData;
-    View parentLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -195,6 +192,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
 
 
     }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -213,7 +211,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         Uri uri = Uri.parse(contact_external_url);
         Log.e("handleContact: ", uri + "");
 
-       /* Cursor c = managedQuery(uri, null, null, null, null);
+        Cursor c = managedQuery(uri, null, null, null, null);
         if (c.moveToFirst()) {
 
             Log.e("handleContact: ", uri + "");
@@ -222,7 +220,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
             phoneNo = c.getString(phoneIndex);
             Log.e("handleContact: ", name);
             Log.e("handleContact: ", phoneNo);
-        }*/
+        }
     }
 
     /**
@@ -296,7 +294,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
             }).start();
 
         } else {
-            Toast.makeText(getApplicationContext(), "Please choose a File First", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(), "Please choose a File First", Toast.LENGTH_SHORT).show();
         }
 
 
@@ -307,7 +305,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         Log.e(TAG, "IntialAdapter:called" + hello);
-        dataAdapter = new DataAdapter(getApplicationContext(), hello);
+        dataAdapter = new DataAdapter(Data_Sharing.this, hello);
         recyclerView.scrollToPosition(hello.size() - 1);
         dataAdapter.notifyItemInserted(hello.size() - 1);
         recyclerView.setAdapter(dataAdapter);
@@ -533,6 +531,13 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
             finish();
             return true;
         }
+
+        if (id == R.id.action_settings) {
+            Intent setting = new Intent(Data_Sharing.this, User_Setting.class);
+            startActivity(setting);
+
+            return true;
+        }
         if (id == R.id.action_logout) {
 
             new AlertDialog.Builder(this)
@@ -580,6 +585,35 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void logout() {
+        new AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Would you like to logout?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        //SharedPreferenceManager.getDefaults_boolean("notification", false, DataSharing_forUser.this);
+                        //settings.edit().clear().apply();
+
+                        Intent logout = new Intent(Data_Sharing.this, Login.class);
+                        // this flag prevent back to in to application after logout.
+                        logout.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                                Intent.FLAG_ACTIVITY_NEW_TASK
+                                | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        SharedPreferenceManager.ClearAllPreferences(getApplicationContext());
+                        Login.settings.edit().clear().apply();
+                        startActivity(logout);
+                        finish();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // user doesn't want to logout
+                    }
+                })
+                .show();
+
     }
 
     public void animateFAB() {
@@ -635,8 +669,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                     final Uri filePath = data.getData();
                     Log.e("IMAGE", filePath + "");
                     selectedFilePath = FilePath.getPath(this, filePath);
-                    //setGet.path(String.valueOf(filePath));
-                    //FilePaths.add(setGet);
+
                     if (selectedFilePath != null && !selectedFilePath.isEmpty()) {
 
                         dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
@@ -672,39 +705,58 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
             case RESULT_LOAD_FILE:
                 if (requestCode == RESULT_LOAD_FILE &&
                         resultCode == RESULT_OK && null != data) {
-                    String FilePath = data.getData().getPath();
-                    Log.e("FILEPATH", FilePath);
-                    selectedFilePath = FilePath.substring(FilePath.lastIndexOf("/") + 1);
-                    Log.e("onActivityResult: ", selectedFilePath);
 
-                    if (selectedFilePath != null && !selectedFilePath.equals("")) {
-                        dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
-                        //for getting current date and time
-                        Date currentDate = Calendar.getInstance().getTime();
-                        java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
-                        String formattedCurrentDate = simpleDateFormat.format(currentDate);
+                    Uri selectedFileUri = data.getData();
+                    selectedFilePath = FilePath.getPath(this, selectedFileUri);
+                    Log.e(TAG, "Selected File Path:" + selectedFilePath);
 
-                        String[] splited = formattedCurrentDate.split("\\s+");
-                        date = splited[0];
-                        time = splited[1];
-                        ampma = splited[2];
+                    if (selectedFilePath.endsWith(".pdf") || selectedFilePath.endsWith(".docx") || selectedFilePath.endsWith(".doc") || selectedFilePath.endsWith(".txt")) {
+                        if (selectedFilePath != null && !selectedFilePath.equals("")) {
+                            dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
+                            //for getting current date and time
+                            Date currentDate = Calendar.getInstance().getTime();
+                            java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
+                            String formattedCurrentDate = simpleDateFormat.format(currentDate);
 
-                        Log.e(TAG, "onCreate: " + date);
-                        Log.e(TAG, "onCreate: " + time + " " + ampma);
+                            String[] splited = formattedCurrentDate.split("\\s+");
+                            date = splited[0];
+                            time = splited[1];
+                            ampma = splited[2];
 
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                //creating new thread to handle Http Operations
-                                uploadFile(selectedFilePath);
-                                new UploadImage().execute(selectedFilePath);
-                            }
-                        }).start();
+                            Log.e(TAG, "onActivityResult: " + date);
+                            Log.e(TAG, "onActivityResult: " + time + " " + ampma);
+
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //creating new thread to handle Http Operations
+                                    uploadFile(selectedFilePath);
+                                    new UploadImage().execute(selectedFilePath);
+                                }
+                            }).start();
+
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Please choose a File First", Toast.LENGTH_SHORT).show();
+                        }
 
                     } else {
-                        Toast.makeText(getApplicationContext(), "Please choose a File First", Toast.LENGTH_SHORT).show();
+                        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(Data_Sharing.this);
+                        builder.setTitle("Warning For File Choosing");
+                        builder.setMessage("File selected by you is not appropriate for this application.");
+                        builder.setIcon(R.drawable.warning);
+                        builder.setPositiveButton("OK",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        FilePicker();
+                                    }
+                                });
+                        android.support.v7.app.AlertDialog dialog = builder.create();
+                        // display dialog
+                        dialog.show();
                     }
                 }
+
             case REQUEST_CODE_PICK_CONTACTS:
                 if (requestCode == REQUEST_CODE_PICK_CONTACTS && resultCode == RESULT_OK && null != data) {
                     contactData = data.getData();
@@ -736,6 +788,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
 
                     }
                 }
+
             case RESULT_LOAD_IMAGE_CAPTURE:
                 if (requestCode == RESULT_LOAD_IMAGE_CAPTURE &&
                         resultCode == RESULT_OK) {
@@ -918,6 +971,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                                     HashMap<String, String> map = new HashMap<>();
                                     map.put(Config.TAG_DATA, object.getString(Config.TAG_DATA));
                                     map.put(Config.KEY_PHONE, object.getString(Config.KEY_PHONE));
+                                    map.put("local_path", object.getString("local_path"));
                                     map.put(Config.CURRENT_DATE, object.getString(Config.CURRENT_DATE));
                                     map.put(Config.CURRENT_TIME, object.getString(Config.CURRENT_TIME));
 
@@ -958,76 +1012,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         requestQueue.add(stringRequest);
     }
 
-    //for insert image name into db
-    public class UploadImage extends AsyncTask<String, Void, String> {
-
-        static final String UPLOAD_KEY = "image";
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-         /*   loading = new ProgressDialog(getApplicationContext());
-            loading.setMessage("Uploading...");
-            loading.show();*/
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-
-                LoadUserData();
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            HashMap<String, String> data = new HashMap<>();
-            data.put(Config.KEY_PHONE, user_Click_Phone);
-            data.put(UPLOAD_KEY, fileName);
-            data.put(Config.KEY_A_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
-            // data.put(LOCAL_PATH, LocalfilePath);
-            data.put(Config.CURRENT_DATE, date);
-            data.put(Config.CURRENT_TIME, time + " " + ampma);
-            Log.e("HashMap data: ", data + "");
-            String result = jsonParser.sendPostRequest(Config.SEND_USERDATA, data);
-            Log.e("result: ", result);
-            return result;
-        }
-    }
-
-    //for insert contact into db
-    public class UploadContact extends AsyncTask<String, Void, String> {
-
-        static final String UPLOAD_KEY = "image";
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-
-                LoadUserData();
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            HashMap<String, String> data = new HashMap<>();
-            data.put(Config.KEY_PHONE, user_Click_Phone);
-            data.put(UPLOAD_KEY, phoneNo.replaceAll(" ", "") + ":" + name);
-            data.put(Config.KEY_A_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
-            data.put(Config.CURRENT_DATE, date);
-            data.put(Config.CURRENT_TIME, time + " " + ampma);
-            Log.e("HashMap data: ", data + "");
-            String result = jsonParser.sendPostRequest(Config.COTACTSEND_ADMIN, data);
-            Log.e("result: ", result);
-            return result;
-        }
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onRequestPermissionsResult(final int requestCode, String[] permissions, int[] grantResults) {
@@ -1065,7 +1049,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onBackPressed() {
-        //	super.onBackPressed();
+        super.onBackPressed();
 
     }
 
@@ -1074,6 +1058,77 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
         super.onRestart();
         if (!marsh.checkIfAlreadyhavePermission()) {
             marsh.requestpermissions();
+        }
+    }
+
+    //for insert image name into db
+    public class UploadImage extends AsyncTask<String, Void, String> {
+
+        static final String UPLOAD_KEY = "image";
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+         /*   loading = new ProgressDialog(getApplicationContext());
+            loading.setMessage("Uploading...");
+            loading.show();*/
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            LoadUserData();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            HashMap<String, String> data = new HashMap<>();
+            data.put(Config.KEY_PHONE, user_Click_Phone);
+            data.put(UPLOAD_KEY, fileName);
+            data.put("local_path", selectedFilePath);
+            Log.e(TAG, "doInBackground: " + selectedFilePath);
+            data.put(Config.KEY_A_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
+            data.put(Config.CURRENT_DATE, date);
+            data.put(Config.CURRENT_TIME, time + " " + ampma);
+            Log.e("HashMap data: ", data + "");
+            String result = jsonParser.sendPostRequest(Config.SEND_USERDATA, data);
+            Log.e("result: ", result);
+            return result;
+        }
+    }
+
+    //for insert contact into db
+    public class UploadContact extends AsyncTask<String, Void, String> {
+
+        static final String UPLOAD_KEY = "image";
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            LoadUserData();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            HashMap<String, String> data = new HashMap<>();
+            data.put(Config.KEY_PHONE, user_Click_Phone);
+            data.put(UPLOAD_KEY, phoneNo.replaceAll(" ", "") + ":" + name);
+            data.put(Config.KEY_A_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
+            data.put(Config.CURRENT_DATE, date);
+            data.put(Config.CURRENT_TIME, time + " " + ampma);
+            Log.e("HashMap data: ", data + "");
+            String result = jsonParser.sendPostRequest(Config.COTACTSEND_ADMIN, data);
+            Log.e("result: ", result);
+            return result;
         }
     }
 }

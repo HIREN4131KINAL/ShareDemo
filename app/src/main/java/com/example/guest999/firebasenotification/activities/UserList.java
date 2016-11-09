@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +34,7 @@ import com.android.volley.toolbox.Volley;
 import com.example.guest999.firebasenotification.Config;
 import com.example.guest999.firebasenotification.R;
 import com.example.guest999.firebasenotification.utilis.SharedPreferenceManager;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -83,24 +85,24 @@ public class UserList extends AppCompatActivity {
         Log.e(TAG, "onCreate external: " + admin_type);
         if (Intent.ACTION_SEND.equals(action) && type != null && admin_type.contains("admin")) {
             if (type.startsWith("image/")) {
-                imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 Log.e("handleSendImage admin: ", imageUri + "");
             } else if (type.startsWith("text/")) {
-                ContactPath = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                ContactPath = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 Log.e("CONTACT admin", ContactPath + "");
             } else {
-                FilePath = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                FilePath = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 Log.e("FILEPATH admin", FilePath + "");
             }
         } else if (admin_type.contains("user")) {
             if (type.startsWith("image/")) {
-                imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 Log.e("handleSendImage user: ", imageUri + "");
             } else if (type.startsWith("text/")) {
-                ContactPath = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                ContactPath = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 Log.e("CONTACT user", ContactPath + "");
             } else {
-                FilePath = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                FilePath = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 Log.e("FILEPATH user", FilePath + "");
             }
         } else {
@@ -217,6 +219,7 @@ public class UserList extends AppCompatActivity {
                                     HashMap<String, String> map = new HashMap<>();
                                     map.put("username", object.getString(Config.KEY_USERNAME));
                                     map.put("phone", object.getString(Config.KEY_PHONE));
+                                    map.put("profile_path", object.getString(Config.KEY_PROFILE_PATH));
                                     //map.put("type",object.getString("type"));
 
                                     /*if(Objects.equals(Config.KEY_TYPE, "admin"))
@@ -287,9 +290,23 @@ public class UserList extends AppCompatActivity {
         public void onBindViewHolder(MyAdapter.ViewHolder holder, final int position) {
             final String username = mDataset.get(position).get(Config.KEY_USERNAME);
             final String phone = mDataset.get(position).get(Config.KEY_PHONE);
+            final String path = mDataset.get(position).get(Config.KEY_PROFILE_PATH);
 
             holder.name.setText(username);
             holder.phon.setText(phone);
+
+
+            if (!path.isEmpty()) {
+                Picasso.with(UserList.this)
+                        .load(path)
+                        .placeholder(R.drawable.placeholder)
+                        .into(holder.imageView);
+            }else{
+                Picasso.with(UserList.this)
+                        .load(R.drawable.default_profile)
+                        .placeholder(R.drawable.placeholder)
+                        .into(holder.imageView);
+            }
 
             holder.main_lin.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -337,13 +354,14 @@ public class UserList extends AppCompatActivity {
         class ViewHolder extends RecyclerView.ViewHolder {
             private TextView name, phon;
             private LinearLayout main_lin;
-            /*private ImageView imageView;*/
+            private ImageView imageView;
 
             ViewHolder(View itemView) {
                 super(itemView);
                 name = (TextView) itemView.findViewById(R.id.m_name);
                 phon = (TextView) itemView.findViewById(R.id.phone_number);
                 main_lin = (LinearLayout) itemView.findViewById(R.id.main_lin);
+                imageView = (ImageView) itemView.findViewById(R.id.profile_image_list);
             }
         }
     }

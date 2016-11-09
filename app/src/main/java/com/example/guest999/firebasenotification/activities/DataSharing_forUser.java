@@ -76,26 +76,23 @@ import static com.example.guest999.firebasenotification.Config.PhoneFromURl;
 
 public class DataSharing_forUser extends AppCompatActivity implements View.OnClickListener {
 
-    private static final int REQUEST_PERMISSION = 1;
     public static final int RESULT_LOAD_FILE = 0;
     public static final int RESULT_LOAD_IMAGE = 1;
     public static final int RESULT_LOAD_IMAGE_CAPTURE = 2;
     public static final int RESULT_OK = -1;
+    private static final int REQUEST_PERMISSION = 1;
     private static final int REQUEST_CODE_PICK_CONTACTS = 99;
     public static ArrayList<HashMap<String, String>> hello;
-
+    public static SharedPreferences settings;
+    public String LocalfilePath;
+    protected String user_Click_Phone, image_external_Url, file_extenal_Url, contact_external_url;
     //
     DataAdapter_User dataAdapter_user;
     View vg;
-    public String LocalfilePath;
     FileCacher<ArrayList<HashMap<String, String>>> stringCacher = new FileCacher<>(DataSharing_forUser.this, "cache_tmp.txt");
-
     RecyclerView recyclerView;
     Toolbar toolbar;
     MarshmallowPermissions marsh;
-    public static SharedPreferences settings;
-    protected String user_Click_Phone, image_external_Url, file_extenal_Url, contact_external_url;
-
     boolean hidden = true;
     LinearLayout mRevealView;
     ImageButton ib_camera, ib_gallery, ib_contacts, ib_document;
@@ -104,6 +101,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
     Animator animator, animate;
     String TAG = getClass().getName();
     String date, time, ampma, Login_User, type, fileName, mCurrentPhotoPath, phoneNo, name;
+    View parentLayout;
     private JSONParser jsonParser = new JSONParser();
     private Dialog dialog;
     private String selectedFilePath = null;
@@ -111,8 +109,6 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
     private Boolean isFabOpen = false;
     private Animation fab_open, fab_close;
     private Uri contactData;
-    View parentLayout;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -208,7 +204,6 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
             e.printStackTrace();
         }
     }
-
 
     /**
      * For Get Contact Direct to Contact List
@@ -312,7 +307,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         Log.e(TAG, "IntialAdapter:called" + hello);
-        dataAdapter_user = new DataAdapter_User(getApplicationContext(), hello);
+        dataAdapter_user = new DataAdapter_User(DataSharing_forUser.this, hello);
         recyclerView.scrollToPosition(hello.size() - 1);
         dataAdapter_user.notifyItemInserted(hello.size() - 1);
         recyclerView.setAdapter(dataAdapter_user);
@@ -508,6 +503,13 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
             finish();
             return true;
         }
+
+        if (id == R.id.action_settings) {
+            Intent setting = new Intent(DataSharing_forUser.this, User_Setting.class);
+            startActivity(setting);
+
+            return true;
+        }
         if (id == R.id.action_logout) {
 
             new AlertDialog.Builder(this)
@@ -540,6 +542,35 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void logout() {
+        new AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Would you like to logout?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        //SharedPreferenceManager.getDefaults_boolean("notification", false, DataSharing_forUser.this);
+                        //settings.edit().clear().apply();
+
+                        Intent logout = new Intent(DataSharing_forUser.this, Login.class);
+                        // this flag prevent back to in to application after logout.
+                        logout.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                                Intent.FLAG_ACTIVITY_NEW_TASK
+                                | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        SharedPreferenceManager.ClearAllPreferences(getApplicationContext());
+                        Login.settings.edit().clear().apply();
+                        startActivity(logout);
+                        finish();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // user doesn't want to logout
+                    }
+                })
+                .show();
+
     }
 
     public void animateFAB() {
@@ -670,12 +701,11 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
             case RESULT_LOAD_FILE:
                 if (requestCode == RESULT_LOAD_FILE &&
                         resultCode == RESULT_OK && null != data) {
-                    String FilePath = data.getData().getPath();
-                    Log.e("FILEPATH", FilePath);
-                    selectedFilePath = FilePath.substring(FilePath.lastIndexOf("/") + 1);
-                    Log.e("onActivityResult: ", selectedFilePath);
+                    Uri selectedFileUri = data.getData();
+                    selectedFilePath = FilePath.getPath(this, selectedFileUri);
 
-                    /*show_dialog();*/
+                    Log.e(TAG, "Selected File Path:" + selectedFilePath);
+                    if (selectedFilePath.endsWith(".pdf") || selectedFilePath.endsWith(".docx") || selectedFilePath.endsWith(".doc") || selectedFilePath.endsWith(".txt")) {
                     if (selectedFilePath != null && !selectedFilePath.equals("")) {
                         dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
                         //for getting current date and time
@@ -702,6 +732,22 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
 
                     } else {
                         Toast.makeText(getApplicationContext(), "Please choose a File First", Toast.LENGTH_SHORT).show();
+                    }
+                    } else {
+                        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(DataSharing_forUser.this);
+                        builder.setTitle("Warning For File Choosing");
+                        builder.setMessage("File selected by you is not appropriate for this application.");
+                        builder.setIcon(R.drawable.warning);
+                        builder.setPositiveButton("OK",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        FilePicker();
+                                    }
+                                });
+                        android.support.v7.app.AlertDialog dialog = builder.create();
+                        // display dialog
+                        dialog.show();
                     }
                 }
             case REQUEST_CODE_PICK_CONTACTS:
@@ -917,6 +963,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
                                     HashMap<String, String> map = new HashMap<>();
                                     map.put(Config.TAG_DATA, object.getString(Config.TAG_DATA));
                                     map.put(Config.KEY_PHONE, object.getString(Config.KEY_PHONE));
+                                    map.put("local_path", object.getString("local_path"));
                                     map.put(Config.CURRENT_DATE, object.getString(Config.CURRENT_DATE));
                                     map.put(Config.CURRENT_TIME, object.getString(Config.CURRENT_TIME));
 
@@ -953,73 +1000,6 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
 
         //Adding request the the queue
         requestQueue.add(stringRequest);
-    }
-
-    //for insert image name into db
-    public class UploadImage extends AsyncTask<String, Void, String> {
-
-        static final String UPLOAD_KEY = "image";
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-         /*   loading = new ProgressDialog(getApplicationContext());
-            loading.setMessage("Uploading...");
-            loading.show();*/
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-
-                LoadUserData();
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            HashMap<String, String> data = new HashMap<>();
-            data.put(UPLOAD_KEY, fileName);
-            data.put(Config.KEY_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
-            data.put(Config.CURRENT_DATE, date);
-            data.put(Config.CURRENT_TIME, time + " " + ampma);
-            Log.e("HashMap data: ", data + "");
-            String result = jsonParser.sendPostRequest(Config.FILESEND_USER, data);
-            Log.e("result: ", result);
-            return result;
-        }
-    }
-
-    //for insert contact into db
-    public class UploadContact extends AsyncTask<String, Void, String> {
-
-        static final String UPLOAD_KEY = "image";
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-
-                LoadUserData();
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            HashMap<String, String> data = new HashMap<>();
-            data.put(Config.KEY_PHONE, user_Click_Phone);
-            data.put(UPLOAD_KEY, phoneNo.replaceAll(" ", "") + ":" + name);
-            data.put(Config.KEY_A_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
-            data.put(Config.CURRENT_DATE, date);
-            data.put(Config.CURRENT_TIME, time + " " + ampma);
-            Log.e("HashMap data: ", data + "");
-            String result = jsonParser.sendPostRequest(Config.COTACTSEND_USER, data);
-            Log.e("result: ", result);
-            return result;
-        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -1059,7 +1039,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onBackPressed() {
-        	super.onBackPressed();
+        super.onBackPressed();
 
     }
 
@@ -1068,6 +1048,75 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
         super.onRestart();
         if (!marsh.checkIfAlreadyhavePermission()) {
             marsh.requestpermissions();
+        }
+    }
+
+    //for insert image name into db
+    public class UploadImage extends AsyncTask<String, Void, String> {
+
+        static final String UPLOAD_KEY = "image";
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+         /*   loading = new ProgressDialog(getApplicationContext());
+            loading.setMessage("Uploading...");
+            loading.show();*/
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            LoadUserData();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            HashMap<String, String> data = new HashMap<>();
+            data.put(UPLOAD_KEY, fileName);
+            data.put(Config.KEY_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
+            data.put(Config.CURRENT_DATE, date);
+            data.put(Config.CURRENT_TIME, time + " " + ampma);
+            Log.e(TAG, "doInBackground: " + selectedFilePath);
+            data.put("local_path", selectedFilePath);
+            Log.e("HashMap data: ", data + "");
+            String result = jsonParser.sendPostRequest(Config.FILESEND_USER, data);
+            Log.e("result: ", result);
+            return result;
+        }
+    }
+
+    //for insert contact into db
+    public class UploadContact extends AsyncTask<String, Void, String> {
+
+        static final String UPLOAD_KEY = "image";
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            LoadUserData();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            HashMap<String, String> data = new HashMap<>();
+            data.put(Config.KEY_PHONE, user_Click_Phone);
+            data.put(UPLOAD_KEY, phoneNo.replaceAll(" ", "") + ":" + name);
+            data.put(Config.KEY_A_PHONE, SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
+            data.put(Config.CURRENT_DATE, date);
+            data.put(Config.CURRENT_TIME, time + " " + ampma);
+            Log.e("HashMap data: ", data + "");
+            String result = jsonParser.sendPostRequest(Config.COTACTSEND_USER, data);
+            Log.e("result: ", result);
+            return result;
         }
     }
 }

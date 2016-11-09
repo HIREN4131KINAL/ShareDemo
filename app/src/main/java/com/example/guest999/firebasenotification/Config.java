@@ -33,6 +33,9 @@ public class Config {
     public static final String SEND_USERDATA = "http://laxmisecurity.com/android/firebase/filesend.php";
     public static final String CHANGE_PASSWORD = "http://laxmisecurity.com/android/firebase/changepass.php";
 
+    public static final String LOAD_PROFILE = "http://laxmisecurity.com/android/firebase/profiledisp.php";
+    public static final String SEND_PROFILE = "http://laxmisecurity.com/android/firebase/profilepic.php";
+
     public static final String USER_SCREEN = "http://laxmisecurity.com/android/firebase/user_screen.php";
     public static final String FILESEND_USER = "http://laxmisecurity.com/android/firebase/filesend_user.php";
     public static final String COTACTSEND_ADMIN = "http://laxmisecurity.com/android/firebase/contact_send.php";
@@ -41,6 +44,7 @@ public class Config {
     public static final String INTERNAL_IMAGE_PATH_URI = "http://www.laxmisecurity.com/android/uploads/";
     //Keys to send username, password, phone and otp
     public static final String KEY_USERNAME = "username";
+    public static final String KEY_PROFILE_PATH = "profile_path";
     public static final String KEY_PASSWORD = "password";
     public static final String KEY_PHONE = "phone";
     public static final String KEY_TYPE = "type";

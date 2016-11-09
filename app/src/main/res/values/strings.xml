@@ -33,5 +33,10 @@
     <string name="date">DATE</string>
     <string name="contact_name">Contact name</string>
     <string name="contact_no">Contact no</string>
+    <string name="p_l_shah_amp_co">P.L.Shah &amp; co.</string>
+    <string name="about_you">About You</string>
+    <string name="from_gallery">From Gallery</string>
+    <string name="exit">Exit</string>
+    <string name="take_photo">Take Photo</string>
 
 </resources>
