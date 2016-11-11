@@ -28,6 +28,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.example.guest999.firebasenotification.Config;
 import com.example.guest999.firebasenotification.R;
 import com.example.guest999.firebasenotification.adapters.ProfileAdapter;
@@ -35,8 +40,6 @@ import com.example.guest999.firebasenotification.utilis.FilePath;
 import com.example.guest999.firebasenotification.utilis.JSONParser;
 import com.example.guest999.firebasenotification.utilis.ServiceGetSet;
 import com.example.guest999.firebasenotification.utilis.SharedPreferenceManager;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -245,7 +248,7 @@ public class User_Setting extends AppCompatActivity {
 
                     if (selectedFilePath != null && !selectedFilePath.isEmpty()) {
 
-                        dialog = ProgressDialog.show(User_Setting.this, "", "Sending File ...", true);
+                        dialog = ProgressDialog.show(User_Setting.this, "", "Uploading...", true);
 
                         new Thread(new Runnable() {
                             @Override
@@ -268,7 +271,7 @@ public class User_Setting extends AppCompatActivity {
                     Log.e("onActivityResult: ", selectedFilePath);
 
                     if (selectedFilePath != null && !selectedFilePath.equals("")) {
-                        dialog = ProgressDialog.show(User_Setting.this, "", "Sending File ...", true);
+                        dialog = ProgressDialog.show(User_Setting.this, "", "Uploading...", true);
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
@@ -310,11 +313,12 @@ public class User_Setting extends AppCompatActivity {
                                     tv_no.setText(SharedPreferenceManager.getDefaults("phone", getApplicationContext()));
                                     tv_name.setText(u_name);
 
-                                    Picasso.with(User_Setting.this)
+                                    /*Picasso.with(getApplicationContext())
                                             .load(path)
+                                            .resize(200,200)
+                                            .fit().centerInside()
                                             .placeholder(R.drawable.placeholder)
-                                            .into(profile_image, new Callback() {
-                                                @Override
+                                            .into(profile_image, new com.squareup.picasso.Callback() {
                                                 public void onSuccess() {
                                                     progressBar.setVisibility(View.GONE);
                                                     profile_image.setVisibility(View.VISIBLE);
@@ -324,7 +328,25 @@ public class User_Setting extends AppCompatActivity {
                                                 public void onError() {
 
                                                 }
-                                            });
+                                            })*/;
+
+                                    Glide.with(User_Setting.this)
+                                            .load(path)
+                                            .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                                            .listener(new RequestListener<String, GlideDrawable>() {
+                                                @Override
+                                                public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                                    return false;
+                                                }
+
+                                                @Override
+                                                public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                                    progressBar.setVisibility(View.GONE);
+                                                    profile_image.setVisibility(View.VISIBLE);
+                                                    return false;
+                                                }
+                                            })
+                                            .into(profile_image);
 
                                 }
                             } catch (Exception e) {
@@ -358,7 +380,6 @@ public class User_Setting extends AppCompatActivity {
         //Adding request the the queue
         requestQueue.add(stringRequest);
     }
-
 
     //android upload file or image to servee folder
     //this class is used to move image or file from mobile device to server folder.
@@ -447,7 +468,7 @@ public class User_Setting extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), "Image Upload Sucessfully ", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Uploaded Sucessfuly", Toast.LENGTH_SHORT).show();
 
                             progressBar.setVisibility(View.VISIBLE);
                             profile_image.setVisibility(View.GONE);

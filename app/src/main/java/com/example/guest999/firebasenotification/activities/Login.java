@@ -189,9 +189,9 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                             JSONObject jsonObject = new JSONObject(response);
                             JSONArray jsonArray = jsonObject.getJSONArray("logindata");
 
+
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject object = jsonArray.getJSONObject(i);
-
                                 u_type = object.getString("type");
                                 u_status = object.getString("status");
                                 if (u_type.contains("admin") && u_status.contains("active")) {
@@ -213,7 +213,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                                     editor.putString("f_id", firebase_id);
                                     editor.putBoolean("hasLoggedIn", true);
                                     editor.apply();
-                                } else {
+                                } else if (u_type.contains("user") && u_status.contains("active")) {
 
                                     Intent dataToAdmin = new Intent(Login.this, DataSharing_forUser.class);
                                     dataToAdmin.putExtra("Click_Phone", login_phone);
@@ -229,6 +229,8 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                                     editor.putString("f_id", firebase_id);
                                     editor.putBoolean("hasLoggedIn", true);
                                     editor.apply();
+                                } else if (u_type.contains("no") && u_status.contains("no")) {
+                                        Toast.makeText(Login.this, "Invalid", Toast.LENGTH_SHORT).show();
                                 }
                             }
                             /*if (response.equalsIgnoreCase(Config.TAG_Active)) {
@@ -355,38 +357,6 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         super.onPause();
     }
 
-    private class MyTextWatcher implements TextWatcher {
-
-        private View view;
-
-        MyTextWatcher(View view) {
-            this.view = view;
-        }
-
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-        }
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-        }
-
-        @Override
-        public void afterTextChanged(Editable s) {
-            switch (view.getId()) {
-                case R.id.login_editTextPhone:
-                    validatePhoneNo();
-                    break;
-                case R.id.login_editTextPassword:
-                    validatePassword();
-                    break;
-            }
-
-        }
-    }
-
     public void checkLogin() {
 
         settings = getSharedPreferences(Login.PREFS_NAME, MODE_PRIVATE);
@@ -467,5 +437,37 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
 
         //Adding request the the queue
         requestQueue1.add(stringRequest);
+    }
+
+    private class MyTextWatcher implements TextWatcher {
+
+        private View view;
+
+        MyTextWatcher(View view) {
+            this.view = view;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            switch (view.getId()) {
+                case R.id.login_editTextPhone:
+                    validatePhoneNo();
+                    break;
+                case R.id.login_editTextPassword:
+                    validatePassword();
+                    break;
+            }
+
+        }
     }
 }

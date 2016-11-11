@@ -149,7 +149,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
 
         if (image_external_Url != null) {
             handleImage();
-        }  else if (file_extenal_Url != null) {
+        } else if (file_extenal_Url != null) {
             handleFile();
         }
 
@@ -250,26 +250,26 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
         if (selectedFilePath != null && !selectedFilePath.isEmpty()) {
 
             if (selectedFilePath.endsWith(".pdf") || selectedFilePath.endsWith(".docx") || selectedFilePath.endsWith(".doc") || selectedFilePath.endsWith(".txt")) {
-            dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
-            Date currentDate = Calendar.getInstance().getTime();
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm a");
-            String formattedCurrentDate = simpleDateFormat.format(currentDate);
+                dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
+                Date currentDate = Calendar.getInstance().getTime();
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm a");
+                String formattedCurrentDate = simpleDateFormat.format(currentDate);
 
-            String[] splited = formattedCurrentDate.split("\\s+");
-            date = splited[0];
-            time = splited[1];
-            ampma = splited[2];
+                String[] splited = formattedCurrentDate.split("\\s+");
+                date = splited[0];
+                time = splited[1];
+                ampma = splited[2];
 
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    //creating new thread to handle Http Operations
-                    uploadFile(selectedFilePath);
-                    new DataSharing_forUser.UploadImage().execute(selectedFilePath);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //creating new thread to handle Http Operations
+                        uploadFile(selectedFilePath);
+                        new DataSharing_forUser.UploadImage().execute(selectedFilePath);
 
-                }
-            }).start();
+                    }
+                }).start();
             } else {
                 android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(DataSharing_forUser.this);
                 builder.setTitle("Warning For File Choosing");
@@ -697,34 +697,34 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
 
                     Log.e(TAG, "Selected File Path:" + selectedFilePath);
                     if (selectedFilePath.endsWith(".pdf") || selectedFilePath.endsWith(".docx") || selectedFilePath.endsWith(".doc") || selectedFilePath.endsWith(".txt")) {
-                    if (selectedFilePath != null && !selectedFilePath.equals("")) {
-                        dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
-                        //for getting current date and time
-                        Date currentDate = Calendar.getInstance().getTime();
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm a");
-                        String formattedCurrentDate = simpleDateFormat.format(currentDate);
+                        if (selectedFilePath != null && !selectedFilePath.equals("")) {
+                            dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
+                            //for getting current date and time
+                            Date currentDate = Calendar.getInstance().getTime();
+                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm a");
+                            String formattedCurrentDate = simpleDateFormat.format(currentDate);
 
-                        String[] splited = formattedCurrentDate.split("\\s+");
-                        date = splited[0];
-                        time = splited[1];
-                        ampma = splited[2];
+                            String[] splited = formattedCurrentDate.split("\\s+");
+                            date = splited[0];
+                            time = splited[1];
+                            ampma = splited[2];
 
-                        Log.e(TAG, "onCreate: " + date);
-                        Log.e(TAG, "onCreate: " + time + " " + ampma);
+                            Log.e(TAG, "onCreate: " + date);
+                            Log.e(TAG, "onCreate: " + time + " " + ampma);
 
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                //creating new thread to handle Http Operations
-                                Log.e(TAG, "Selected File Path run:" + selectedFilePath);
-                                uploadFile(selectedFilePath);
-                                new UploadImage().execute(selectedFilePath);
-                            }
-                        }).start();
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //creating new thread to handle Http Operations
+                                    Log.e(TAG, "Selected File Path run:" + selectedFilePath);
+                                    uploadFile(selectedFilePath);
+                                    new UploadImage().execute(selectedFilePath);
+                                }
+                            }).start();
 
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Please choose a File First", Toast.LENGTH_SHORT).show();
-                    }
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Please choose a File First", Toast.LENGTH_SHORT).show();
+                        }
                     } else {
                         android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(DataSharing_forUser.this);
                         builder.setTitle("Warning For File Choosing");
@@ -895,7 +895,11 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), "Image Sent Sucessfully ", Toast.LENGTH_SHORT).show();
+                            if (selectedFilePath.endsWith(".pdf") || selectedFilePath.endsWith(".docx") || selectedFilePath.endsWith(".doc") || selectedFilePath.endsWith(".txt")) {
+                                Toast.makeText(getApplicationContext(), "File Sent Sucessfully ", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Image Sent Sucessfully ", Toast.LENGTH_SHORT).show();
+                            }
 
                             //  tvFileName.setText("File Upload completed.\n\n You can see the uploaded file here: \n\n" + "http://www.laxmisecurity.com/android/uploads/" + fileName);
                         }

@@ -13,6 +13,10 @@
     <color name="deepPurple2">#e0e0e0</color>
     <color name="divider_color">#b5b5b5</color>
 
+    <color name="refresh1">#f44336</color>
+    <color name="refresh2">#03A9F4</color>
+    <color name="refresh3">#000</color>
+
     <array name="dot_colors">
         <item>#f44336</item>
         <item>#03A9F4</item>

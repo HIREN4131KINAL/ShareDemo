@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -31,6 +32,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.guest999.firebasenotification.Config;
 import com.example.guest999.firebasenotification.R;
 import com.example.guest999.firebasenotification.utilis.SharedPreferenceManager;
@@ -49,21 +52,21 @@ import static com.example.guest999.firebasenotification.Config.KEY_PHONE;
  * Created by Harshad and Modified Joshi Tushar
  */
 
-
-public class UserList extends AppCompatActivity {
+public class UserList extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
     public static ArrayList<HashMap<String, String>> hello;
-    RecyclerView lv;
-    String Login_User, User_Click_Phone, admin_type;
-    String TAG = getClass().getName();
-    private RequestQueue requestQueue;
     public Uri imageUri, FilePath;
+    RecyclerView lv;
+    String Login_User, User_Click_Phone, admin_type,image_external_Url = null, file_extenal_Url = null;
 
+    String TAG = getClass().getName();
+    MyAdapter myAdapter;
+    private RequestQueue requestQueue;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_userlist);
-        lv = (RecyclerView) findViewById(R.id.recyclerview_userlist);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -71,8 +74,66 @@ public class UserList extends AppCompatActivity {
         toolbar.setTitle("P. L. Shah & Co.");
 
 
+        lv = (RecyclerView) findViewById(R.id.recyclerview_userlist);
+
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setColorSchemeResources(R.color.refresh1, R.color.refresh2, R.color.refresh3);
+
+        hello = new ArrayList<>(); //helloo
+
+        if (hello != null) {
+            IntialAdapter();
+            swipeRefreshLayout.setRefreshing(false);
+        }
+
+        swipeRefreshLayout.setRefreshing(false);
+
+        swipeRefreshLayout.setOnRefreshListener(this);
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(true);
+                Log.e("Runnable method ", "helloo");
+                // Loading b_name JSON in Background Thread
+                CheckUserType();
+            }
+        });
+
         requestQueue = Volley.newRequestQueue(this);
 
+        OutSideIntentCondition();
+
+    }
+
+    public void LoadUiElement() {
+        lv = (RecyclerView) findViewById(R.id.recyclerview_userlist);
+
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setColorSchemeResources(R.color.refresh1, R.color.refresh2, R.color.refresh3);
+
+    }
+
+    public void LoadUiListener() {
+        swipeRefreshLayout.setOnRefreshListener(this);
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(true);
+                Log.e("Runnable method ", "helloo");
+                // Loading b_name JSON in Background Thread
+                //CheckUserType();
+            }
+        });
+    }
+
+    @Override
+    public void onRefresh() {
+        Log.e("onRefresh()", "");
+        // Loading b_name JSON in Background Thread
+        CheckUserType();
+    }
+
+    public void OutSideIntentCondition() {
         Login_User = SharedPreferenceManager.getDefaults("phone", getApplicationContext());
         admin_type = SharedPreferenceManager.getDefaults("type", getApplicationContext());
         Log.e(TAG, "onCreate login phone: " + Login_User);
@@ -103,14 +164,23 @@ public class UserList extends AppCompatActivity {
         }
 
         if (admin_type.contains("admin")) {
-            CheckUserType();
+            /*CheckUserType();*/
+            swipeRefreshLayout.post(new Runnable() {
+                @Override
+                public void run() {
+                    swipeRefreshLayout.setRefreshing(true);
+                    Log.e("Runnable method ", "");
+                    // Loading b_name JSON in Background Thread
+                    //CheckUserType();
+                }
+            });
         } else if (admin_type.contains("user")) {
             Intent intent1 = new Intent(this, DataSharing_forUser.class);
-            intent1.putExtra("Click_Phone user",Login_User);
+            intent1.putExtra("Click_Phone user", Login_User);
             if (imageUri != null) {
                 intent1.putExtra("U_IMG_URL", imageUri + "");
                 Log.e("onClick user: ", imageUri + "");
-            }  else if(FilePath!=null){
+            } else if (FilePath != null) {
                 intent1.putExtra("U_FILE_URL", FilePath + "");
                 Log.e("onClick user: ", FilePath + "");
             }
@@ -125,9 +195,12 @@ public class UserList extends AppCompatActivity {
 
     private void IntialAdapter() {
         lv.setHasFixedSize(true);
-        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(UserList.this);
         lv.setLayoutManager(mLayoutManager);
-        lv.setAdapter(new MyAdapter(UserList.this, hello));
+        myAdapter = new MyAdapter(UserList.this, hello);
+        lv.setAdapter(myAdapter);
+        swipeRefreshLayout.setRefreshing(false);
+
     }
 
     @Override
@@ -142,6 +215,13 @@ public class UserList extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.menu_search:
                 Intent intent = new Intent(UserList.this, Search.class);
+                if (imageUri != null) {
+                    intent.putExtra("IMG_URL_SEARCH", imageUri + "");
+                    Log.e("onOptionsItem admin: ", imageUri + "");
+                } else if (FilePath != null) {
+                    intent.putExtra("FILE_URL_SEARCH", FilePath + "");
+                    Log.e("onOptionsItem admin: ", FilePath + "");
+                }
                 startActivity(intent);
                 return true;
 
@@ -170,6 +250,7 @@ public class UserList extends AppCompatActivity {
                                 startActivity(logout);
                                 finish();
 
+                                Toast.makeText(UserList.this, "Logout sucessfully", Toast.LENGTH_SHORT).show();
 
                             }
                         })
@@ -187,10 +268,15 @@ public class UserList extends AppCompatActivity {
         }
     }
 
+    /**
+     * This method is called when swipe refresh is pulled down
+     */
+
     private void CheckUserType() {
 
         /*final ProgressDialog loading = ProgressDialog.show(this, "Requesting", "Please wait...", false, false);*/
-
+        // showing refresh animation before making http call
+        swipeRefreshLayout.setRefreshing(true);
         StringRequest stringRequest = new StringRequest(Request.Method.POST, Config.CHECK_USERTYPE,
                 new Response.Listener<String>() {
                     @Override
@@ -225,18 +311,27 @@ public class UserList extends AppCompatActivity {
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+//                            myAdapter.notifyDataSetChanged();
                         } else {
                             Log.e("ServiceHandler", "Couldn't get any data from the url");
                         }
-                        IntialAdapter();
+
+                        if (getApplicationContext() != null) {
+                            IntialAdapter();
+                        }
+                       /* swipeRefreshLayout.setRefreshing(false);
+                        IntialAdapter();*/
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         //    loading.dismiss();
-                        Toast.makeText(UserList.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(UserList.this, "No Internet Connection", Toast.LENGTH_LONG).show();
                         Log.e("onErrorResponse: ", error + "");
+
+                        // stopping swipe refresh
+                        swipeRefreshLayout.setRefreshing(false);
                     }
                 }) {
             @Override
@@ -285,13 +380,19 @@ public class UserList extends AppCompatActivity {
             holder.name.setText(username);
             holder.phon.setText(phone);
 
-
             if (!path.isEmpty()) {
-                Picasso.with(UserList.this)
+               /* Picasso.with(UserList.this)
                         .load(path)
+                        .resize(400,400)
                         .placeholder(R.drawable.placeholder)
+                        .into(holder.imageView);*/
+
+                Glide.with(UserList.this)
+                        .load(path)
+                        .diskCacheStrategy(DiskCacheStrategy.RESULT)
                         .into(holder.imageView);
-            }else{
+
+            } else {
                 Picasso.with(UserList.this)
                         .load(R.drawable.default_profile)
                         .placeholder(R.drawable.placeholder)
@@ -311,7 +412,7 @@ public class UserList extends AppCompatActivity {
                         if (imageUri != null) {
                             i.putExtra("IMG_URL", imageUri + "");
                             Log.e("onClick admin: ", imageUri + "");
-                        }else if(FilePath!=null){
+                        } else if (FilePath != null) {
                             i.putExtra("FILE_URL", FilePath + "");
                             Log.e("onClick admin: ", FilePath + "");
                         }
@@ -322,12 +423,39 @@ public class UserList extends AppCompatActivity {
                 }
             });
 
+
+            /*holder.main_lin.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    User_Click_Phone = mDataset.get(position).get(Config.KEY_PHONE);
+                    Intent i = new Intent(context, Data_Sharing.class);
+                    Bundle extras = new Bundle();
+                    if (image_external_Url != null) {
+                        extras.putString("IMG_URL", image_external_Url);
+                        Log.e("onClick: ", image_external_Url);
+                    } else if (file_extenal_Url != null) {
+                        extras.putString("FILE_URL", file_extenal_Url);
+                        Log.e("onClick: ", file_extenal_Url);
+                    }
+                    image_external_Url = null;
+                    file_extenal_Url = null;
+                    extras.putString("Click_Phone", User_Click_Phone);
+                    extras.putString("user_name",mDataset.get(position).get(Config.KEY_USERNAME));
+                    i.putExtras(extras);
+                    Log.e("onClick: ", User_Click_Phone );
+                    Log.e(TAG, "onClick: "+ mDataset.get(position).get(Config.KEY_USERNAME));
+                    context.startActivity(i);
+
+                }
+            });*/
+
             Animation animation = AnimationUtils.loadAnimation(context,
                     (position > lastposition) ? R.anim.up_from_bottom
                             : R.anim.down_from_top);
             holder.itemView.startAnimation(animation);
             lastposition = position;
         }
+
 
         @Override
         public int getItemCount() {

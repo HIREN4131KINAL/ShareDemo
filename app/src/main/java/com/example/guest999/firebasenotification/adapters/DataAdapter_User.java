@@ -23,6 +23,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.guest999.firebasenotification.Config;
 import com.example.guest999.firebasenotification.R;
 import com.example.guest999.firebasenotification.utilis.DownloadCallBack;
@@ -259,11 +261,19 @@ public class DataAdapter_User extends RecyclerView.Adapter implements DownloadCa
             extStore = Environment.getExternalStorageDirectory();
             myFile = new File(extStore.getAbsolutePath() + "/FileSharing/" + ImageFileName);
 
-            Picasso.with(context)
+           /* Picasso.with(context)
                     .load(Image_name)
                     .centerCrop()
                     .placeholder(R.drawable.placeholder)
                     .resize(120, 120)
+                    .into(image.score);*/
+
+            Glide.with(context)
+                    .load(Image_name)
+                    .override(300,300)
+                    .centerCrop()
+                    .placeholder(R.drawable.placeholder)
+                    .diskCacheStrategy(DiskCacheStrategy.RESULT)
                     .into(image.score);
 
             PhoneFromDevice = SharedPreferenceManager.getDefaults("phone", context);
@@ -283,6 +293,15 @@ public class DataAdapter_User extends RecyclerView.Adapter implements DownloadCa
                             .resize(50, 50)
                             .transform(new GrayscaleTransformation())
                             .into(image.score);
+
+                   /* Glide.with(context)
+                            .load(file_paths.get(position).get(Config.TAG_DATA))
+                            .override(300,300)
+                            .centerCrop()
+                            .placeholder(R.drawable.placeholder)
+                            .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                            .bitmapTransform(new BlurTransformation(context))
+                            .into(image.score);*/
                 }
 
             } else {
@@ -333,13 +352,21 @@ public class DataAdapter_User extends RecyclerView.Adapter implements DownloadCa
 
             String[] splited = Contact_name.split(":");
             String phone_no = splited[0];
-            String phone_name = splited[1];
-
-            Log.e("onBindViewHolder: ", phone_no);
-            Log.e("onBindViewHolder: ", phone_name);
+            String phone_name = null;
+            try {
+                phone_name = splited[1];
+                Log.e("onBindViewHolder: ", phone_no);
+                Log.e("onBindViewHolder: ", phone_name);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             contactPick.no.setText(phone_no);
-            contactPick.name.setText(phone_name);
+            try {
+                contactPick.name.setText(phone_name);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             contactPick.textview_time.setText(ad_time);
             contactPick.textview_date.setText(ad_date);
             if (!file_paths.get(position).get(Config.KEY_PHONE).equals(PhoneFromDevice)) {

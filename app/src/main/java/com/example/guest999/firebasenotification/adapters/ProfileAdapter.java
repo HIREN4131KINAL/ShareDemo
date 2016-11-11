@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.guest999.firebasenotification.R;
@@ -68,8 +67,6 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.MyViewHo
             @Override
             public void onClick(View v) {
 
-
-                Toast.makeText(mContext, position + "", Toast.LENGTH_SHORT).show();
                 if (position == 0) {
                     Intent intent = new Intent(mContext, Change_pass.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

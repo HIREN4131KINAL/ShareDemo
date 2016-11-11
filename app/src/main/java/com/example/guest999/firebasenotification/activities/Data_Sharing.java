@@ -7,7 +7,6 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -83,12 +82,9 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_PERMISSION = 1;
     private static final int REQUEST_CODE_PICK_CONTACTS = 99;
     public static ArrayList<HashMap<String, String>> hello;
-    public static SharedPreferences settings;
-    public String LocalfilePath;
     protected String user_Click_Phone, image_external_Url, file_extenal_Url;
     //
     DataAdapter dataAdapter;
-    View vg;
     FileCacher<ArrayList<HashMap<String, String>>> stringCacher = new FileCacher<>(Data_Sharing.this, "cache_tmp.txt");
     RecyclerView recyclerView;
     Toolbar toolbar;
@@ -188,7 +184,6 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
 
 
     }
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -908,7 +903,15 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), "Image Sent Sucessfully ", Toast.LENGTH_SHORT).show();
+
+                            if (selectedFilePath.endsWith(".pdf") || selectedFilePath.endsWith(".docx") || selectedFilePath.endsWith(".doc") || selectedFilePath.endsWith(".txt")) {
+
+                                Toast.makeText(getApplicationContext(), "File Sent Sucessfully ", Toast.LENGTH_SHORT).show();
+
+                            } else {
+
+                                Toast.makeText(getApplicationContext(), "Image Sent Sucessfully ", Toast.LENGTH_SHORT).show();
+                            }
 
                             //  tvFileName.setText("File Upload completed.\n\n You can see the uploaded file here: \n\n" + "http://www.laxmisecurity.com/android/uploads/" + fileName);
                         }
