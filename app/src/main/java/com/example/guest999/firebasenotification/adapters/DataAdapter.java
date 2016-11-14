@@ -18,7 +18,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -41,7 +40,6 @@ import java.util.HashMap;
 
 import jp.wasabeef.picasso.transformations.GrayscaleTransformation;
 
-import static android.view.View.INVISIBLE;
 import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
 import static com.example.guest999.firebasenotification.Config.PhoneFromDevice;
 
@@ -151,14 +149,14 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
                     file.linearLayout.setGravity(Gravity.LEFT | Gravity.BOTTOM);
                     file.outgoing_layout_bubble.setBackgroundResource(R.drawable.balloon_incoming_normal);
                     //LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                    file.outgoing_layout_bubble.addView(file.myButton);
+                    //file.outgoing_layout_bubble.addView(file.myButton);
 
                     String subject_name = file.temp.getText().toString();
                     File extStore = Environment.getExternalStorageDirectory();
                     File myFile = new File(extStore.getAbsolutePath() + "/FileSharing/" + subject_name);
 
 
-                    file.outgoing_layout_bubble.setOnClickListener(new View.OnClickListener() {
+                    /*file.outgoing_layout_bubble.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
 
@@ -185,9 +183,9 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
                         }
 
 
-                    });
+                    });*/
 
-                    file.myButton.setOnClickListener(new View.OnClickListener() {
+                    file.outgoing_layout_bubble.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
 
@@ -238,17 +236,17 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
                                     downloadPdf = new DownloadTaskPDF(context, downloadCallBack);
                                     //   downloadTask.execute("http://ia.tranetech.ae:82/upload/uploads/five-point-someone-chetan-bhagat_ebook.pdf",""+finalHolder.tv_paper_name.getText().toString()+".pdf");
                                     downloadPdf.execute(file_paths.get(position).get(Config.TAG_DATA), "" + file.temp.getText().toString());
-                                    file.myButton.setVisibility(View.GONE);
+                                    //file.myButton.setVisibility(View.GONE);
                                 } else {
 
                                     try {
                                         // File pdfFile = new File(Environment.getExternalStorageDirectory() + "/FileSharing/" + pdfname );  // -> filename
-                                        file.outgoing_layout_bubble.removeView(file.myButton);
+                                        //file.outgoing_layout_bubble.removeView(file.myButton);
                                         Uri path = Uri.fromFile(myFile);
                                         Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
                                         pdfIntent.setDataAndType(path, "application/pdf");
                                         pdfIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        file.myButton.setVisibility(INVISIBLE);
+                                        // file.myButton.setVisibility(INVISIBLE);
 
                                         context.startActivity(pdfIntent);
                                     } catch (ActivityNotFoundException e) {
@@ -256,23 +254,6 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
                                     }
                                 }
 
-                                /*if (myFile.exists()) {
-
-                                    try {
-                                   // File pdfFile = new File(Environment.getExternalStorageDirectory() + "/FileSharing/" + pdfname );  // -> filename
-                                    Uri path = Uri.fromFile(myFile);
-                                    Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
-                                    pdfIntent.setDataAndType(path, "application/pdf");
-                                    pdfIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-
-                                        context.startActivity(pdfIntent);
-                                    } catch (ActivityNotFoundException e) {
-                                        Toast.makeText(context, "No Application available to view PDF", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-
-*/
                             }
 
                         }
@@ -288,19 +269,47 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
                     file.linearLayout.setGravity(Gravity.RIGHT | Gravity.BOTTOM);
                     file.outgoing_layout_bubble.setBackgroundResource(R.drawable.balloon_outgoing_normal);
 
+                    final String abc = file_paths.get(position).get("local_path");
+
                     file.outgoing_layout_bubble.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             try {
                                 // File pdfFile = new File(Environment.getExternalStorageDirectory() + "/FileSharing/" + pdfname );  // -> filename
-                                String abc = file_paths.get(position).get("local_path");
-                                File file = new File(abc);
-                                Log.e("onClick: check local path", abc);
-                                Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
-                                pdfIntent.setDataAndType(Uri.fromFile(file), "application/pdf");
-                                pdfIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                if (!abc.isEmpty()) {
+                                    File file = new File(abc);
+                                    Log.e("onClick: check local path", abc);
+                                    Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+                                    pdfIntent.setDataAndType(Uri.fromFile(file), "application/pdf");
+                                    pdfIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    context.startActivity(pdfIntent);
+                                } else {
+                                    File extStore = Environment.getExternalStorageDirectory();
+                                    File myFile = new File(extStore.getAbsolutePath() + "/FileSharing/" + file.temp.getText().toString());
+                                    if (!myFile.exists()) {
+                                        // execute this when the downloader must be fired
+                                        downloadPdf = new DownloadTaskPDF(context, downloadCallBack);
+                                        //   downloadTask.execute("http://ia.tranetech.ae:82/upload/uploads/five-point-someone-chetan-bhagat_ebook.pdf",""+finalHolder.tv_paper_name.getText().toString()+".pdf");
+                                        downloadPdf.execute(file_paths.get(position).get(Config.TAG_DATA), "" + file.temp.getText().toString());
+                                        //file.myButton.setVisibility(View.GONE);
+                                    } else {
 
-                                context.startActivity(pdfIntent);
+                                        try {
+                                            // File pdfFile = new File(Environment.getExternalStorageDirectory() + "/FileSharing/" + pdfname );  // -> filename
+                                            //file.outgoing_layout_bubble.removeView(file.myButton);
+                                            Uri path = Uri.fromFile(myFile);
+                                            Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+                                            pdfIntent.setDataAndType(path, "application/pdf");
+                                            pdfIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                            // file.myButton.setVisibility(INVISIBLE);
+
+                                            context.startActivity(pdfIntent);
+                                        } catch (ActivityNotFoundException e) {
+                                            Toast.makeText(context, "No Application available to view PDF", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                }
+
                             } catch (ActivityNotFoundException e) {
                                 Toast.makeText(context, "No Application available to view PDF", Toast.LENGTH_SHORT).show();
                             }
@@ -329,7 +338,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
 
             Glide.with(context)
                     .load(Image_name)
-                    .override(300,300)
+                    .override(300, 300)
                     .centerCrop()
                     .placeholder(R.drawable.placeholder)
                     .diskCacheStrategy(DiskCacheStrategy.RESULT)
@@ -411,7 +420,6 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
             }
 
 
-
             contactPick.no.setText(phone_no);
             try {
                 contactPick.name.setText(phone_name);
@@ -459,7 +467,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
         LinearLayout outgoing_layout_bubble;
         LinearLayout linearLayout;
         ImageView file_type_image;
-        Button myButton;
+        //Button myButton;
 
         FilePick(View v) {
             super(v);
@@ -470,9 +478,9 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
             this.outgoing_layout_bubble = (LinearLayout) v.findViewById(R.id.outgoing_layout_bubble);
             this.linearLayout = (LinearLayout) v.findViewById(R.id.mainlinearlayout);
             this.file_type_image = (ImageView) v.findViewById(R.id.file_image);
-            myButton = new Button(context);
+            /*myButton = new Button(context);
             myButton.setText("Download");
-            myButton.setMinimumWidth(150);
+            myButton.setMinimumWidth(150);*/
 
 
         }
