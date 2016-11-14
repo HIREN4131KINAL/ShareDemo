@@ -83,7 +83,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> im
         Log.e("IS this PDF ?", String.valueOf(file_paths.get(position).get(Config.TAG_DATA).endsWith(".pdf")));
         if (file_paths.get(position).get(Config.TAG_DATA).endsWith(".pdf") || file_paths.get(position).get(Config.TAG_DATA).endsWith(".docx") || file_paths.get(position).get(Config.TAG_DATA).endsWith(".doc") || file_paths.get(position).get(Config.TAG_DATA).endsWith(".txt")) {
             return RESULT_LOAD_FILE;
-        } else if (file_paths.get(position).get(Config.TAG_DATA).endsWith(".png") || file_paths.get(position).get(Config.TAG_DATA).endsWith(".jpg") || file_paths.get(position).get(Config.TAG_DATA).endsWith(".jpeg")) {
+        } else if (file_paths.get(position).get(Config.TAG_DATA).endsWith(".png") || file_paths.get(position).get(Config.TAG_DATA).endsWith(".PNG")  || file_paths.get(position).get(Config.TAG_DATA).endsWith(".jpg") || file_paths.get(position).get(Config.TAG_DATA).endsWith(".JPG")|| file_paths.get(position).get(Config.TAG_DATA).endsWith(".jpeg")  || file_paths.get(position).get(Config.TAG_DATA).endsWith(".JPEG")) {
             return RESULT_LOAD_IMAGE;
         } else {
             return REQUEST_CODE_PICK_CONTACTS;

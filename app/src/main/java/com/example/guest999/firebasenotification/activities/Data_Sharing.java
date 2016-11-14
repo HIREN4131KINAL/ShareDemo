@@ -662,7 +662,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
 
                     if (selectedFilePath != null && !selectedFilePath.isEmpty()) {
 
-                        dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
+                        dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending Image ...", true);
 
                         //get date and time from device and chane it in fix format
                         Date currentDate = Calendar.getInstance().getTime();
@@ -757,7 +757,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
 
                     if (contactData != null) {
 
-                        dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
+                        dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending ...", true);
                         Date currentDate = Calendar.getInstance().getTime();
                         java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
                         String formattedCurrentDate = simpleDateFormat.format(currentDate);
@@ -786,7 +786,7 @@ public class Data_Sharing extends AppCompatActivity implements View.OnClickListe
                     selectedFilePath = mCurrentPhotoPath;
                     Log.e(TAG, "onActivityResult: " + selectedFilePath);
                     if (selectedFilePath != null && !selectedFilePath.equals("")) {
-                        dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending File ...", true);
+                        dialog = ProgressDialog.show(Data_Sharing.this, "", "Sending Image ...", true);
                         Date currentDate = Calendar.getInstance().getTime();
                         java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
                         String formattedCurrentDate = simpleDateFormat.format(currentDate);

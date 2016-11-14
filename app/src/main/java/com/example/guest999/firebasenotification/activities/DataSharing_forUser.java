@@ -659,7 +659,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
 
                     if (selectedFilePath != null && !selectedFilePath.isEmpty()) {
 
-                        dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
+                        dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending Image ...", true);
 
                         //get date and time from device and chane it in fix format
                         Date currentDate = Calendar.getInstance().getTime();
@@ -685,7 +685,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
                         }).start();
 
                     } else {
-                        Toast.makeText(getApplicationContext(), "Please choose a File First", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Please choose a Image First", Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -751,7 +751,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
 
                     if (contactData != null) {
 
-                        dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
+                        dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending...", true);
                         Date currentDate = Calendar.getInstance().getTime();
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm a");
                         String formattedCurrentDate = simpleDateFormat.format(currentDate);
@@ -779,7 +779,7 @@ public class DataSharing_forUser extends AppCompatActivity implements View.OnCli
                     selectedFilePath = mCurrentPhotoPath;
                     Log.e(TAG, "onActivityResult: " + selectedFilePath);
                     if (selectedFilePath != null && !selectedFilePath.equals("")) {
-                        dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending File ...", true);
+                        dialog = ProgressDialog.show(DataSharing_forUser.this, "", "Sending Image ...", true);
                         Date currentDate = Calendar.getInstance().getTime();
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm a");
                         String formattedCurrentDate = simpleDateFormat.format(currentDate);
