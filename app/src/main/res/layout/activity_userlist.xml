@@ -1,23 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
 
     <include
         android:id="@+id/toolbar"
-        layout="@layout/activity_toolbar" />
+        layout="@layout/activity_toolbar"/>
 
-    <android.support.v4.widget.SwipeRefreshLayout
+
+    <com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout
         android:id="@+id/swipe_refresh_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:elevation="8dp"
+        android:scrollIndicators="bottom"
+        app:srl_direction="bottom">
+
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerview_userlist"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </android.support.v4.widget.SwipeRefreshLayout>
+            android:layout_height="match_parent"
+            android:nestedScrollingEnabled="false"
+            />
+    </com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout>
 
 </LinearLayout>

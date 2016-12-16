@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/mainlinearlayout"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+              android:id="@+id/mainlinearlayout"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
 
     <!-- <LinearLayout
          android:id="@+id/outgoing_layout_bubble"
@@ -32,11 +32,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top"
-                android:layout_marginLeft="10dp"
                 android:layout_weight="2"
+                android:paddingStart="10dp"
                 android:gravity="left"
                 android:text="@string/date"
-                android:textSize="14sp" />
+                android:textSize="14sp"/>
 
             <!--<ImageButton
                 android:id="@+id/ib_remove"
@@ -60,12 +60,11 @@
                 android:weightSum="2">
 
                 <ImageView
-                    android:id="@+id/call_image"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_gravity="start|center"
                     android:layout_weight="0"
-                    android:background="@drawable/contact_send_" />
+                    android:background="@drawable/contact_send_"/>
 
                 <TextView
                     android:id="@+id/contact_name"
@@ -74,8 +73,8 @@
                     android:layout_gravity="start|center"
                     android:layout_margin="5dp"
                     android:text="@string/contact_name"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="15sp" />
+                    android:textColor="@color/allApp_textColor"
+                    android:textSize="15sp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -86,7 +85,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@color/divider_color" />
+                    android:background="@color/divider_color"/>
 
                 <TextView
                     android:id="@+id/contact_no"
@@ -96,8 +95,8 @@
                     android:layout_margin="5dp"
                     android:text="@string/contact_no"
                     android:textAlignment="textStart"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="15sp" />
+                    android:textColor="@color/allApp_textColor"
+                    android:textSize="15sp"/>
             </LinearLayout>
 
         </LinearLayout>
@@ -108,38 +107,39 @@
             android:layout_weight="0"
             android:orientation="horizontal"
             android:paddingRight="5dp"
-            android:weightSum="2">
+            >
 
             <TextView
                 android:id="@+id/send_receive"
                 style="@style/chat_timings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="5dp"
-                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:gravity="center"
+              android:padding="5dp"
                 android:text="@string/send_receive_status"
-                android:textSize="14sp" />
+                android:textSize="14sp"/>
 
             <TextView
                 android:id="@+id/textview_time"
                 style="@style/chat_timings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"
-                android:layout_marginTop="5dp"
+                android:layout_gravity="center"
                 android:layout_weight="1"
                 android:gravity="end"
+                android:padding="5dp"
                 android:text="@string/_11_15_pm"
-                android:textSize="14sp" />
+                android:textSize="14sp"/>
 
             <ImageView
-                android:id="@+id/user_reply_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
+                android:layout_gravity="center"
+                android:layout_weight="1"
                 android:paddingBottom="3dp"
-                android:src="@drawable/message_got_read_receipt_from_target" />
+                android:padding="5dp"
+                android:src="@drawable/message_got_read_receipt_from_target"/>
 
         </LinearLayout>
     </LinearLayout>

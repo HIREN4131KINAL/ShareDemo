@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/mainlinearlayout"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginLeft="5dp"
-    android:layout_marginRight="5dp"
-    android:orientation="vertical">
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:id="@+id/mainlinearlayout"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginLeft="5dp"
+              android:layout_marginRight="5dp"
+              android:baselineAligned="false"
+              android:orientation="vertical">
+
 
     <LinearLayout
         android:id="@+id/outgoing_layout_bubble"
@@ -18,6 +21,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:baselineAligned="false"
             android:orientation="vertical">
 
             <LinearLayout
@@ -37,37 +41,97 @@
                     android:layout_gravity="start"
                     android:layout_weight="1.5"
                     android:text="@string/date"
-                    android:textSize="14sp"/>
+                    android:textSize="14sp" />
 
-                <!--    <ImageButton
-                        android:id="@+id/ib_remove"
-                        android:layout_width="10dp"
-                        android:layout_height="18dp"
-                        android:layout_gravity="end"
-                        android:layout_weight="0.4"
-                        android:padding="5dp"
-                        android:background="@android:color/transparent"
-                        android:src="@android:drawable/ic_menu_close_clear_cancel" />-->
+                <!--  <ImageButton
+                      android:id="@+id/ib_remove"
+                      android:layout_width="10dp"
+                      android:layout_height="18dp"
+                      android:layout_gravity="end"
+                      android:layout_weight="0.4"
+                      android:background="@android:color/transparent"
+                      android:padding="5dp"
+                      android:src="@android:drawable/ic_menu_close_clear_cancel"/>-->
             </LinearLayout>
 
-
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="180dp"
                 android:layout_height="200dp"
                 android:layout_gravity="center"
-
                 android:gravity="center"
-                android:orientation="vertical"
-                android:weightSum="3">
+                android:orientation="vertical">
+
 
                 <ImageView
                     android:id="@+id/image_list"
-                    android:layout_width="180dp"
-                    android:layout_height="200dp"
-                    android:layout_gravity="center"
-                    />
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_gravity="center" />
 
-            </LinearLayout>
+                <RelativeLayout
+                    android:id="@+id/rl_img_size"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:background="@drawable/bg_img_download_icn"
+                    android:gravity="center"
+                    android:padding="20dp"
+                    android:scaleType="fitCenter" />
+
+
+                <io.netopen.hotbitmapgg.library.view.RingProgressBar
+                    android:id="@+id/rpb_img_size"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:layout_centerInParent="true"
+                    app:max="100"
+                    app:ringColor="@android:color/darker_gray"
+                    app:ringProgressColor="@color/colorPrimary"
+                    app:ringWidth="3dp"
+                    app:style="STROKE"
+                    app:textColor="@color/refresh2"
+                    app:textIsShow="true"
+                    app:textSize="16sp" />
+
+
+                <!--    <ProgressBar
+                        android:id="@+id/progressBar1"
+                        style="?android:attr/progressBarStyleLarge"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:progressDrawable="@drawable/circular_progress_bar"/>-->
+
+
+                <TextView
+                    android:id="@+id/txt_img_size"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/ib_img_size"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center"
+
+                    android:text="@string/_11_15_pm"
+                    android:textColor="@android:color/white"
+                    android:textSize="10sp" />
+
+                <ImageButton
+                    android:id="@+id/ib_img_size"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/rl_img_size"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="13dp"
+                    android:background="@android:drawable/stat_sys_download" />
+
+            </RelativeLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -88,7 +152,7 @@
                     android:maxLines="1"
                     android:padding="2dp"
                     android:text="@string/send_receive_status"
-                    android:textSize="12sp"/>
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/textview_time"
@@ -101,20 +165,21 @@
                     android:maxLines="1"
                     android:padding="3dp"
                     android:text="@string/_11_15_pm"
-                    android:textSize="12sp"/>
+                    android:textSize="12sp" />
 
                 <ImageView
-                    android:id="@+id/user_reply_status"
+                    android:id="@+id/imageView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_weight="1"
                     android:padding="3dp"
-                    android:src="@drawable/message_got_read_receipt_from_target"/>
+                    android:src="@drawable/message_got_read_receipt_from_target" />
 
             </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>
+
 
 </LinearLayout>

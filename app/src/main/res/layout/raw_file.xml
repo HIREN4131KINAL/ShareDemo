@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/mainlinearlayout"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginLeft="5dp"
-    android:layout_marginRight="5dp">
+              android:id="@+id/mainlinearlayout"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginLeft="5dp"
+              android:layout_marginRight="5dp">
 
 
     <LinearLayout
@@ -13,6 +13,48 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:weightSum="2">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:gravity="start"
+            android:orientation="horizontal"
+            android:padding="3dp"
+            android:weightSum="2">
+
+            <TextView
+                android:id="@+id/textview_date"
+                style="@style/chat_timings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_weight="1.5"
+                android:text="@string/date"
+                android:textSize="14sp"/>
+
+            <TextView
+                android:id="@+id/txt_file_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/ib_img_size"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center"
+                android:layout_weight="0.5"
+                android:gravity="center"
+                android:text="xyz"
+                android:textColor="@android:color/background_dark"
+                android:textSize="14sp"/>
+            <!--    <ImageButton
+                    android:id="@+id/ib_remove"
+                    android:layout_width="10dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="end"
+                    android:layout_weight="0.4"
+                    android:padding="5dp"
+                    android:background="@android:color/transparent"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel" />-->
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -26,7 +68,8 @@
                 android:layout_height="40dp"
                 android:layout_gravity="start|top"
                 android:layout_margin="5dp"
-                android:padding="5dp" />
+                android:background="@drawable/pdf"
+                android:padding="5dp"/>
 
             <TextView
                 android:id="@+id/file_name"
@@ -36,8 +79,8 @@
                 android:layout_margin="10dp"
                 android:text="@string/filename"
                 android:textAlignment="center"
-                android:textColor="@color/colorPrimary"
-                android:textSize="20sp" />
+                android:textColor="@color/allApp_textColor"
+                android:textSize="20sp"/>
 
         </LinearLayout>
 
@@ -53,10 +96,10 @@
                 style="@style/chat_timings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.8"
+                android:layout_weight="0.73"
                 android:gravity="center"
                 android:text="@string/send_receive_status"
-                android:textSize="12sp" />
+                android:textSize="12sp"/>
 
             <TextView
                 android:id="@+id/textview_time"
@@ -67,16 +110,16 @@
                 android:gravity="center"
                 android:padding="5dp"
                 android:text="@string/_11_15_pm"
-                android:textSize="12sp" />
+                android:textSize="12sp"/>
 
             <ImageView
-                android:id="@+id/user_reply_status"
+                android:id="@+id/imageView2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:layout_weight="0.2"
                 android:padding="5dp"
-                android:src="@drawable/message_got_read_receipt_from_target" />
+                android:src="@drawable/message_got_read_receipt_from_target"/>
 
         </LinearLayout>
     </LinearLayout>

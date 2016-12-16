@@ -21,7 +21,6 @@
             android:orientation="horizontal">
 
             <LinearLayout
-                android:id="@+id/camera_ll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -42,7 +41,6 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/gallery_ll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
 
@@ -57,7 +55,6 @@
                     android:background="@drawable/gallery" />
 
                 <TextView
-                    android:id="@+id/textView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
@@ -78,7 +75,6 @@
 
 
             <LinearLayout
-                android:id="@+id/document_ll"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
 
@@ -101,7 +97,6 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/contacts_ll"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
 

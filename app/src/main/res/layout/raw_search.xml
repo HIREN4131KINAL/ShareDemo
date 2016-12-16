@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/main_rel"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="5dp">
+              android:id="@+id/main_rel"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_margin="5dp">
 
     <LinearLayout
         android:id="@+id/main_lin"
         android:layout_width="match_parent"
         android:layout_height="80dp"
-        android:background="@android:drawable/picture_frame"
+        android:background="@drawable/bg_list_row"
         android:orientation="horizontal">
 
         <de.hdodenhof.circleimageview.CircleImageView
@@ -18,30 +18,32 @@
             android:layout_height="50dp"
             android:layout_gravity="center"
             android:layout_marginLeft="12dp"
-            android:src="@drawable/default_profile" />
+            android:src="@drawable/default_profile"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:weightSum="2">
+
+
+            <TextView
+                android:id="@+id/m_name"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="15dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:singleLine="true"
+                android:text="@string/title"
+                android:textColor="@android:color/background_dark"
+                android:textSize="15sp"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
+                android:layout_weight="1"
                 android:weightSum="2">
-
-                <TextView
-                    android:id="@+id/m_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginLeft="15dp"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:singleLine="true"
-                    android:text="@string/title"
-                    android:textColor="@android:color/holo_blue_light"
-                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/phone_number"
@@ -51,8 +53,19 @@
                     android:layout_weight="1"
                     android:gravity="center_vertical"
                     android:text="phone no"
-                    android:textColor="@android:color/holo_blue_light"
-                    android:textSize="15sp" />
+                    android:textColor="@android:color/background_dark"
+                    android:textSize="15sp"/>
+
+                <TextView
+                    android:id="@+id/count_read_unread"
+                    android:layout_width="70dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_img_counter"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/colorPrimary"/>
 
             </LinearLayout>
         </LinearLayout>

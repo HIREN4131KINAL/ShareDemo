@@ -6,6 +6,8 @@ import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,71 +22,50 @@ import java.net.URL;
 public class DownloadTaskIMG extends AsyncTask<String, Integer, String> {
 	private Context context;
 	private DownloadCallBack downloadCallBack;
-
-	//  private PowerManager.WakeLock mWakeLock;
-	//ProgressDialog mProgressDialog;
-
+	//RingProgressBar rpb_img_size;
+	public SwipyRefreshLayout swipeRefreshLayout;
 	private static final int MEGABYTE = 1024 * 1024;
 	private String Name;
-	private String URL;
+	private String internalImagePathUri;
 
 
-	public DownloadTaskIMG(Context context, String internalImagePathUri, String Name, DownloadCallBack downloadCallBack) {
+	public DownloadTaskIMG(Context context, String internalImagePathUri, String Name, DownloadCallBack downloadCallBack, SwipyRefreshLayout swipeRefreshLayout) {
 		this.context = context;
 		this.Name = Name;
-		URL = internalImagePathUri;
+		this.internalImagePathUri = internalImagePathUri;
 		this.downloadCallBack = downloadCallBack;
+		this.swipeRefreshLayout = swipeRefreshLayout;
+		//	this.rpb_img_size = rpb_img_size;
 	}
 
 
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
+		//	swipeRefreshLayout.setEnabled(false);
+		swipeRefreshLayout.post(new Runnable() {
+									@Override
+									public void run() {
+										Toast.makeText(context, "Downloading...", Toast.LENGTH_SHORT).show();
+										swipeRefreshLayout.setRefreshing(true);
 
-/*
-		mProgressDialog = new ProgressDialog((Activity)context);
-        // Set the progress dialog background color transparent
-        mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#FFFFFF")));
-        mProgressDialog.setMessage("Downloading....");
-        mProgressDialog.setIndeterminate(true);
-        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        mProgressDialog.setCancelable(true);
-        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                getClass().getName());
-        mWakeLock.acquire();
-        mProgressDialog.show();
-        Window window = mProgressDialog.getWindow();
-        WindowManager.LayoutParams params = window.getAttributes();
-        params.x = -20;
-        params.height = 150;
-        params.width = 450;
-        params.y = -10;
-        window.setAttributes(params);
-
-        mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-
-                String sdcard_path = Environment.getExternalStorageDirectory().getPath();
-                File file = new File(sdcard_path + "/FileSharing/" + Name + ".jpg");
-                file.delete();
-                Toast.makeText(context, "Download cancle", Toast.LENGTH_SHORT).show();
-            }
-        });*/
+									}
+								}
+		);
+		//	rpb_img_size.setVisibility(View.VISIBLE);
 	}
 
 
 	@Override
 	protected String doInBackground(String... str) {
 
-		// String URL = str[0];
+		// String internalImagePathUri = str[0];
 		// Name = str[1];
 		InputStream input = null;
 		OutputStream output = null;
 		HttpURLConnection connection = null;
 		try {
-			java.net.URL url = new URL(URL.concat(Name));
+			java.net.URL url = new URL(internalImagePathUri.concat(Name));
 			connection = (HttpURLConnection) url.openConnection();
 			connection.connect();
 
@@ -105,14 +86,15 @@ public class DownloadTaskIMG extends AsyncTask<String, Integer, String> {
 			String sdcard_path = Environment.getExternalStorageDirectory().getPath();
 			Log.e("Path ------ ", " " + sdcard_path);
 			// create a File object for the parent directory
-			File PapersDiractory = new File(sdcard_path + "/FileSharing/");
+			File PapersDiractory = new File(sdcard_path + "/P L Shah/P L Shah Images/");
 			// have the object build the directory structure, if needed.
 			PapersDiractory.mkdirs();
 			// create a File object for the output file
-			File outputFile = new File(PapersDiractory, "" + Name);
+			File outputFile = new File(PapersDiractory, "" + Name.substring(10));
+
 			// now attach the OutputStream to the file object, instead of a String representation
 			output = new FileOutputStream(outputFile);
-//                 output = new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/five-point-someone-chetan-bhagat_ebook.pdf");
+//          output = new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/five-point-someone-chetan-bhagat_ebook.pdf");
 
 			byte data[] = new byte[MEGABYTE];
 			long total = 0;
@@ -128,8 +110,10 @@ public class DownloadTaskIMG extends AsyncTask<String, Integer, String> {
 				if (fileLength > 0) // only if total length is known
 					publishProgress((int) (total * 100 / fileLength));
 				int progress = (int) (total * 100 / fileLength);
-				Log.e("Progress = ", "" + progress);
+				//Log.e("Progress = ", "" + progress);
+
 				output.write(data, 0, count);
+
 			}
 		} catch (Exception e) {
 			return e.toString();
@@ -152,21 +136,32 @@ public class DownloadTaskIMG extends AsyncTask<String, Integer, String> {
 	protected void onProgressUpdate(Integer... progress) {
 		super.onProgressUpdate(progress);
 		// if we get here, length is known, now set indeterminate to false
-	/*    mProgressDialog.setIndeterminate(false);
-		mProgressDialog.setMax(100);
-        mProgressDialog.setProgress(progress[0]);*/
+		//	rpb_img_size.setMax(100);
+		//	rpb_img_size.setProgress(progress[0]);
+
 	}
 
 	@Override
 	protected void onPostExecute(String result) {
 		//  mWakeLock.release();
 		//  mProgressDialog.dismiss();
-		if (result != null)
+		if (result != null) {
+			swipeRefreshLayout.setRefreshing(false);
 			Toast.makeText(context, "Connection Error or file not found", Toast.LENGTH_LONG).show();
-		else {
+		} else {
+			//	rpb_img_size.setVisibility(View.INVISIBLE);
+			swipeRefreshLayout.setRefreshing(false);
+			//	swipeRefreshLayout.setEnabled(false);
 			downloadCallBack.onDownloadComplete();
-			Toast.makeText(context, "File downloaded successfully", Toast.LENGTH_SHORT).show();
-
+			//	Toast.makeText(context, "Downloaded successfully", Toast.LENGTH_SHORT).show();
 		}
 	}
+
+	// -- called if the cancel button is pressed
+/*	@Override
+	protected void onCancelled() {
+		super.onCancelled();
+		Log.i("makemachine", "onCancelled()");
+		rpb_img_size.setVisibility(View.INVISIBLE);
+	}*/
 }

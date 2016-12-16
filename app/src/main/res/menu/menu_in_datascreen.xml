@@ -2,7 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".activities.MainActivity">
-    <item
+ <!--   <item
         android:id="@+id/action_attachment"
         android:icon="@drawable/attachment"
         android:title="@string/media"
@@ -17,5 +17,17 @@
         android:id="@+id/action_logout"
         android:title="@string/action_logout"
         android:orderInCategory="100"
-        app:showAsAction="never" />
+        app:showAsAction="never" />-->
+    <item
+        android:id="@+id/action_clr"
+        android:title="@string/action_clear"
+        android:icon="@drawable/clear"
+        android:orderInCategory="100"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/context_menu"
+        android:title="Context Menu"
+        android:icon="@drawable/btn_add"
+        android:orderInCategory="100"
+        app:showAsAction="always" />
 </menu>

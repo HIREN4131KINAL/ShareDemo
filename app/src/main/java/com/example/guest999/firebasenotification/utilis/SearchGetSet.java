@@ -7,14 +7,16 @@ package com.example.guest999.firebasenotification.utilis;
 public class SearchGetSet {
     private String name, no;
     private String thumbnail_pic;
+    private String counter;
 
     public SearchGetSet() {
     }
 
-    public SearchGetSet(String full_name, String full_no, String thumbnail) {
+    public SearchGetSet(String full_name, String full_no, String thumbnail, String count_read_unread) {
         this.name = full_name;
         this.no = full_no;
         this.thumbnail_pic = thumbnail;
+        counter = count_read_unread;
     }
 
     public String getSearchName() {
@@ -39,5 +41,13 @@ public class SearchGetSet {
 
     public void setThumbnail(String thumbnail) {
         this.thumbnail_pic = thumbnail;
+    }
+
+    public String getCounter() {
+        return counter;
+    }
+
+    public void setCounter(String counter_) {
+        this.counter = counter_;
     }
 }

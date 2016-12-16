@@ -19,7 +19,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
     public void onTokenRefresh() {
         super.onTokenRefresh();
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-
+        Log.d(TAG, "Refreshed token: " + refreshedToken);
         // Saving reg id to shared preferences
         storeRegIdInPref(refreshedToken);
 
@@ -34,6 +34,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
     private void sendRegistrationToServer(final String token) {
         // sending gcm token to server
+
         Log.e(TAG, "sendRegistrationToServer: " + token);
     }
 
